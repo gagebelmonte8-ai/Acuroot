@@ -12,7 +12,7 @@ dist
 dist-ssr
 *.local
 
-# Local env (the Shopify domain is also hardcoded as a fallback in src/lib/shopify.js)
+# Local env
 .env
 
 # Editor directories and files

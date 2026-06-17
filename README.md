@@ -1,16 +1,32 @@
-# React + Vite
+# Zooicha — The AI Website Builder
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Marketing site for **Zooicha**, an AI website builder that turns a single
+sentence into a complete, responsive, ready-to-publish website.
 
-Currently, two official plugins are available:
+Built with React + Vite and the [`motion`](https://motion.dev) animation
+library. Single-page landing site with a live hero demo, feature grid,
+pricing, testimonials and FAQ.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Develop
 
-## React Compiler
+```bash
+npm install
+npm run dev      # start the dev server (Vite)
+npm run build    # production build to dist/
+npm run preview  # preview the production build
+npm run lint     # eslint
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Project structure
 
-## Expanding the ESLint configuration
+- `index.html` — document shell, fonts and meta tags
+- `src/main.jsx` — React entry point
+- `src/App.jsx` — the full landing page (sections + hero demo)
+- `src/App.css` — component styles
+- `src/index.css` — design tokens (colors, type, layout) and resets
+- `public/favicon.svg` — gradient "Z" mark
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Deploy
+
+Configured for [Netlify](netlify.toml): build with `npm run build`,
+publish `dist/`, with an SPA fallback redirect.

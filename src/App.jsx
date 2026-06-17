@@ -1,535 +1,564 @@
-import { useState, useRef } from 'react'
-import {
-  motion,
-  AnimatePresence,
-  useScroll,
-  useSpring,
-  useTransform,
-  useMotionValue,
-} from 'motion/react'
+import { useEffect, useRef, useState } from 'react'
+import { motion, useInView } from 'motion/react'
 import './App.css'
-import { cartUrl, VARIANTS, CARE_VARIANT, shopifyConfigured } from './lib/shopify'
 
-/* ---------- product imagery (AliExpress CDN) ---------- */
-const ae = (hash) => `https://ae01.alicdn.com/kf/${hash}.jpg`
-const IMG = {
-  gold: ae('Scad630702f354901808d834c71ea01a76'),   // gold set + lifestyle
-  yellow: ae('Sa96c32b9b70b4de9bcbee9b6b802a8c5y'),  // yellow set
-  purple: ae('S14b2b4287e9840488d031f1cd816e533J'),  // purple set
-  gray: ae('S5ae9170a5c604eb2b5eebf6cc9d43872O'),    // gray detail
-  detail: ae('S5c768bdf6b834df0b8187796701e4be10'),  // foam / construction detail
-}
+/* ------------------------------------------------------------------ */
+/*  Small helpers                                                      */
+/* ------------------------------------------------------------------ */
 
-/* ---------- commerce config ---------- */
-const BASE_PRICE = 60
-// Original / compare-at value per set — drives the struck-through "was" price.
-const COMPARE_AT = 120
-const PROTECTION_PRICE = 5
-
-const BUNDLES = [
-  { qty: 1, price: 60, label: '1 Set', sub: 'Mat · Pillow · Bag' },
-  { qty: 2, price: 105, label: '2 Sets', sub: 'One to share', tag: 'Most popular' },
-  { qty: 3, price: 155, label: '3 Sets', sub: 'The whole house', tag: 'Best value' },
-]
-// each colour swaps the product photo
-const COLORS = [
-  { name: 'Gold', hex: '#c9a13b', img: IMG.gold },
-  { name: 'Purple', hex: '#7c4dcf', img: IMG.purple },
-  { name: 'Yellow', hex: '#f3c40f', img: IMG.yellow },
-  { name: 'Gray', hex: '#9b9b9b', img: IMG.gray },
-]
-const money = (n) => `$${n}`
-
-/* ---------- original copy ---------- */
-const BENEFITS = [
-  { n: '01', title: 'Wind down faster', img: IMG.purple, body: 'A few quiet minutes on the mat before bed helps your body shift out of go-mode. Many people find it the easiest way to signal "the day is done."' },
-  { n: '02', title: 'Ease everyday tension', img: IMG.yellow, body: 'The thousands of contact points spread gentle pressure across your back and shoulders — a simple way to loosen the tightness that builds up from sitting all day.' },
-  { n: '03', title: 'A pocket of calm', img: IMG.gray, body: 'No app, no appointment, no subscription. Roll it out, lie back, and give yourself ten unhurried minutes whenever you need to reset.' },
-]
-const FEATURES = [
-  { title: 'Thoughtfully shaped points', img: IMG.detail, body: 'Each disc is moulded to spread pressure evenly, so the sensation is firm and grounding rather than sharp. It softens within a minute or two of lying down.' },
-  { title: 'Made to last', img: IMG.gray, body: 'A dense foam core that keeps its shape and a removable cover you can refresh between uses. Built to be a fixture of your routine, not a one-week novelty.' },
-  { title: 'Your pace, your pressure', img: IMG.gold, body: 'Start over a light layer, work up to skin contact, and choose how long you stay. The mat meets you wherever you are today.' },
-]
-const REVIEWS = [
-  { t: 'My new evening ritual', b: 'I keep it next to the bed now. Ten minutes with the lights low and I actually feel my shoulders drop.', who: 'Maya R.' },
-  { t: 'Better than I expected', b: 'The first minute is a surprise, then it just turns into warmth. I look forward to it after long days at the desk.', who: 'Daniel K.' },
-  { t: 'Simple and it works', b: 'No gadgets, nothing to charge. I roll it out, breathe, and get off feeling lighter every time.', who: 'Priya S.' },
-  { t: 'Great little reset', b: 'I use it before stretching in the morning. It wakes my back up without feeling harsh.', who: 'Tom A.' },
-  { t: 'Calmer nights', b: 'I am not promising miracles, but I fall asleep faster on the days I use it. That is enough for me.', who: 'Leah M.' },
-  { t: 'Lovely to come home to', b: 'It became the thing that tells my brain the workday is over. Quietly one of my favourite buys this year.', who: 'Chris D.' },
-]
-const FAQS = [
-  { q: 'What comes in the box?', a: 'Every Acuroot order is an all-in-1 set: the acupressure mat, a matching neck pillow, and a carry bag to keep it tidy or take it with you.' },
-  { q: 'Does it hurt?', a: 'The first moment can feel intense, but for most people it settles into a warm, tingling sensation within a minute or two. You are in full control of how long you stay and whether you use a layer of clothing.' },
-  { q: 'How long should I use it?', a: 'Ten to twenty minutes is a comfortable starting point. Begin with a t-shirt between you and the mat, and move to direct contact as you get used to the feeling.' },
-  { q: 'What does the protection plan cover?', a: 'Acuroot Care is an optional $5 add-on that covers accidental damage and manufacturing faults for the first 30 days, with a free replacement if anything goes wrong. Totally optional, and you can add it at checkout.' },
-]
-
-/* ---------- motion helpers ---------- */
-const fadeUp = {
-  hidden: { opacity: 0, y: 40 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
-}
-const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.12 } } }
-
-function Section({ children, id, className = '' }) {
-  return (
-    <motion.section id={id} className={`section ${className}`} variants={stagger} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }}>
-      {children}
-    </motion.section>
-  )
-}
-function Stars({ n = 5 }) {
-  return <span className="stars" aria-label={`${n} stars`}>{'★★★★★'.slice(0, n)}</span>
-}
-
-/* ---------- shared store ---------- */
-function useStore() {
-  const [qty, setQty] = useState(1)
-  const [color, setColor] = useState(COLORS[0])
-  const [protect, setProtect] = useState(false)
-  const [modalOpen, setModalOpen] = useState(false)
-  const [loading, setLoading] = useState(false)
-
-  const bundle = BUNDLES.find((b) => b.qty === qty)
-  const fullPrice = COMPARE_AT * qty
-  const saving = fullPrice - bundle.price
-  const total = bundle.price + (protect ? PROTECTION_PRICE : 0)
-
-  const checkout = () => {
-    const variantId = VARIANTS[`${color.name}-${qty}`]
-    if (!variantId) {
-      alert('Sorry — that option is unavailable. Please pick another.')
-      return
-    }
-    const lines = [{ variantId, quantity: 1 }]
-    if (protect) lines.push({ variantId: CARE_VARIANT, quantity: 1 })
-    setLoading(true)
-    window.location.href = cartUrl(lines)
-  }
-
-  return { qty, setQty, color, setColor, protect, setProtect, modalOpen, setModalOpen, loading, bundle, fullPrice, saving, total, checkout }
-}
-
-/* ---------- brand / logo ---------- */
-function Logo() {
-  return <span className="logo-word">Acuroot<sup className="tm">™</sup></span>
-}
-
-/* ---------- sections ---------- */
-const NAV_LINKS = [
-  ['#benefits', 'Benefits'],
-  ['#story', 'Our story'],
-  ['#reviews', 'Loved by'],
-  ['#faq', 'FAQ'],
-]
-
-function Nav() {
-  const [open, setOpen] = useState(false)
-  return (
-    <motion.header className="nav" initial={{ y: -80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6, ease: 'easeOut' }}>
-      <div className="wrap nav-inner">
-        <a href="#top" className="logo" aria-label="Acuroot home"><Logo /></a>
-        <nav className="nav-links">
-          {NAV_LINKS.map(([href, label]) => (
-            <a key={href} href={href} className="nav-link">{label}</a>
-          ))}
-        </nav>
-        <div className="nav-right">
-          <motion.a href="#buy" className="btn btn-sm shop-now" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>Shop now</motion.a>
-          <button
-            className={`nav-toggle ${open ? 'open' : ''}`}
-            onClick={() => setOpen((v) => !v)}
-            aria-label={open ? 'Close menu' : 'Open menu'}
-            aria-expanded={open}
-          >
-            <span /><span /><span />
-          </button>
-        </div>
-      </div>
-      <AnimatePresence>
-        {open && (
-          <motion.nav
-            className="mobile-menu"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <div className="wrap mobile-menu-inner">
-              {NAV_LINKS.map(([href, label], i) => (
-                <motion.a
-                  key={href}
-                  href={href}
-                  onClick={() => setOpen(false)}
-                  initial={{ opacity: 0, x: -12 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.05 + i * 0.05 }}
-                >
-                  {label}
-                </motion.a>
-              ))}
-            </div>
-          </motion.nav>
-        )}
-      </AnimatePresence>
-    </motion.header>
-  )
-}
-
-function Hero({ store }) {
+function Reveal({ children, delay = 0, y = 18, className = '' }) {
   const ref = useRef(null)
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
-  const artY = useTransform(scrollYProgress, [0, 1], [0, -60])
-  const artScale = useTransform(scrollYProgress, [0, 1], [1, 1.04])
-
-  // pointer-driven 3D tilt on the product card
-  const tiltX = useMotionValue(0)
-  const tiltY = useMotionValue(0)
-  const rotX = useSpring(tiltX, { stiffness: 160, damping: 18 })
-  const rotY = useSpring(tiltY, { stiffness: 160, damping: 18 })
-  const onArtMove = (e) => {
-    const r = e.currentTarget.getBoundingClientRect()
-    const px = (e.clientX - r.left) / r.width - 0.5
-    const py = (e.clientY - r.top) / r.height - 0.5
-    tiltY.set(px * 16)
-    tiltX.set(-py * 16)
-  }
-  const onArtLeave = () => {
-    tiltX.set(0)
-    tiltY.set(0)
-  }
-
-  // scroll so the full selection (price → bundles → colours → add to cart) is in view
-  const goToBuy = (e) => {
-    const el = document.getElementById('buy-options')
-    if (!el) return
-    e.preventDefault()
-    const y = el.getBoundingClientRect().top + window.scrollY - 88
-    window.scrollTo({ top: y, behavior: 'smooth' })
-  }
-
+  const inView = useInView(ref, { once: true, margin: '-60px' })
   return (
-    <section className="hero" id="top" ref={ref}>
-      <div className="hero-aura" aria-hidden="true" />
-      <div className="wrap hero-grid">
-        <div className="hero-copy">
-          <motion.span className="eyebrow" variants={fadeUp} initial="hidden" animate="show">The all-in-1 calm kit · 50% off</motion.span>
-          <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}>
-            Rest your back into <span className="grad-text">stillness</span>
-          </motion.h1>
-          <motion.p className="lead" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25, duration: 0.6 }}>
-            One set, three pieces — <b>mat, pillow and carry bag</b>. A simple way to unwind,
-            soften tension and feel grounded again in ten unhurried minutes.
-          </motion.p>
-          <motion.div className="hero-cta" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.6 }}>
-            <motion.a href="#buy" onClick={goToBuy} className="btn btn-lg hero-shop" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>Shop the set — {money(BASE_PRICE)}</motion.a>
-            <motion.a href="#benefits" className="btn btn-ghost" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>How it feels →</motion.a>
-          </motion.div>
-          <div className="hero-deal">
-            <span className="deal-pill">Launch offer · 50% off</span>
-            <span className="deal-was">{money(COMPARE_AT)}</span>
-            <b className="deal-now">{money(BASE_PRICE)}</b>
-          </div>
-          <div className="hero-trust"><Stars /> <span>Rated 4.9 / 5 by our early customers</span></div>
-        </div>
-
-        <motion.div
-          className="hero-art"
-          style={{ y: artY, scale: artScale }}
-          initial={{ opacity: 0, rotate: -3 }}
-          animate={{ opacity: 1, rotate: 0 }}
-          transition={{ delay: 0.2, type: 'spring', stiffness: 120, damping: 16 }}
-          onMouseMove={onArtMove}
-          onMouseLeave={onArtLeave}
-        >
-          <motion.div
-            className="hero-art-inner"
-            style={{ rotateX: rotX, rotateY: rotY, transformPerspective: 1000 }}
-            animate={{ y: [0, -16, 0] }}
-            transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            <AnimatePresence initial={false}>
-              <motion.img
-                key={store.color.img}
-                src={store.color.img}
-                alt={`Acuroot set in ${store.color.name}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.35, ease: 'easeOut' }}
-              />
-            </AnimatePresence>
-          </motion.div>
-          <motion.div className="float-badge badge-1" animate={{ y: [0, -10, 0] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}>🌙 Easier evenings</motion.div>
-          <motion.div className="float-badge badge-2" animate={{ y: [0, 12, 0] }} transition={{ duration: 4.5, repeat: Infinity, ease: 'easeInOut', delay: 0.5 }}>🍃 {store.color.name}</motion.div>
-        </motion.div>
-      </div>
-    </section>
+    <motion.div
+      ref={ref}
+      className={className}
+      initial={{ opacity: 0, y }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.6, delay, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {children}
+    </motion.div>
   )
 }
 
-function Marquee() {
-  const items = ['ROLL IT OUT', 'BREATHE', 'TEN QUIET MINUTES', 'SOFTEN TENSION', 'NO APPS · NO BATTERIES', 'COME BACK TO CALM']
-  const row = [...items, ...items]
+const Logo = () => (
+  <a href="#top" className="logo" aria-label="Zooicha home">
+    <svg width="30" height="30" viewBox="0 0 64 64" aria-hidden="true">
+      <defs>
+        <linearGradient id="navg" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+          <stop stopColor="#8b5cff" />
+          <stop offset="0.5" stopColor="#3b82f6" />
+          <stop offset="1" stopColor="#22d3ee" />
+        </linearGradient>
+      </defs>
+      <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#navg)" />
+      <path
+        d="M21 22h22l-22 20h22"
+        stroke="#07070d"
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="none"
+      />
+    </svg>
+    <span>zooicha</span>
+  </a>
+)
+
+/* ------------------------------------------------------------------ */
+/*  Animated hero prompt demo                                          */
+/* ------------------------------------------------------------------ */
+
+const PROMPTS = [
+  'a minimalist portfolio for a film photographer',
+  'a landing page for my plant-based protein brand',
+  'an online store for handmade ceramic mugs',
+  'a booking site for a downtown barbershop',
+]
+
+function useTypewriter(phrases, { typeMs = 42, holdMs = 1400, deleteMs = 18 } = {}) {
+  const [text, setText] = useState('')
+  const [done, setDone] = useState(false)
+
+  useEffect(() => {
+    let idx = 0
+    let char = 0
+    let deleting = false
+    let timer
+
+    const tick = () => {
+      const phrase = phrases[idx]
+      if (!deleting) {
+        char++
+        setText(phrase.slice(0, char))
+        setDone(char === phrase.length)
+        if (char === phrase.length) {
+          deleting = true
+          timer = setTimeout(tick, holdMs)
+          return
+        }
+        timer = setTimeout(tick, typeMs)
+      } else {
+        char--
+        setText(phrase.slice(0, char))
+        setDone(false)
+        if (char === 0) {
+          deleting = false
+          idx = (idx + 1) % phrases.length
+        }
+        timer = setTimeout(tick, deleteMs)
+      }
+    }
+
+    timer = setTimeout(tick, 600)
+    return () => clearTimeout(timer)
+  }, [phrases, typeMs, holdMs, deleteMs])
+
+  return { text, done }
+}
+
+function HeroDemo() {
+  const { text, done } = useTypewriter(PROMPTS)
+
   return (
-    <div className="marquee">
-      <motion.div className="marquee-track" animate={{ x: ['0%', '-50%'] }} transition={{ duration: 24, repeat: Infinity, ease: 'linear' }}>
-        {row.map((t, i) => <span key={i} className="marquee-item">{t}<i>✦</i></span>)}
-      </motion.div>
+    <div className="demo">
+      <div className="demo-bar">
+        <span className="dot" />
+        <span className="dot" />
+        <span className="dot" />
+        <div className="demo-url">zooicha.ai/studio</div>
+      </div>
+
+      <div className="demo-body">
+        <div className="prompt">
+          <span className="prompt-spark" aria-hidden="true">✦</span>
+          <span className="prompt-text">
+            {text}
+            <span className="caret" />
+          </span>
+        </div>
+
+        <div className="build-row">
+          <span className={`build-pill ${done ? 'on' : ''}`}>Layout</span>
+          <span className={`build-pill ${done ? 'on' : ''}`} style={{ transitionDelay: '.12s' }}>
+            Copy
+          </span>
+          <span className={`build-pill ${done ? 'on' : ''}`} style={{ transitionDelay: '.24s' }}>
+            Images
+          </span>
+          <span className={`build-pill ${done ? 'on' : ''}`} style={{ transitionDelay: '.36s' }}>
+            Deploy
+          </span>
+        </div>
+
+        <div className={`canvas ${done ? 'on' : ''}`}>
+          <div className="sk sk-nav">
+            <span className="sk-logo" />
+            <span className="sk-links" />
+          </div>
+          <div className="sk-hero">
+            <span className="sk-line w70" />
+            <span className="sk-line w50" />
+            <span className="sk-btn" />
+          </div>
+          <div className="sk-grid">
+            <span className="sk-card" />
+            <span className="sk-card" />
+            <span className="sk-card" />
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
 
-function Benefits() {
-  return (
-    <Section id="benefits">
-      <div className="wrap">
-        <motion.div className="section-head" variants={fadeUp}><span className="eyebrow">Why people keep coming back</span><h2>Ten minutes. One calmer you.</h2></motion.div>
-        <div className="cards">
-          {BENEFITS.map((b) => (
-            <motion.article key={b.n} className="card" variants={fadeUp} whileHover={{ y: -10 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
-              <div className="card-img"><img src={b.img} alt={b.title} loading="lazy" /><span className="card-n">{b.n}</span></div>
-              <h3>{b.title}</h3><p>{b.body}</p>
-            </motion.article>
-          ))}
-        </div>
-      </div>
-    </Section>
-  )
-}
+/* ------------------------------------------------------------------ */
+/*  Content data                                                       */
+/* ------------------------------------------------------------------ */
 
-function Story() {
-  return (
-    <Section id="story" className="story">
-      <div className="wrap story-grid">
-        <motion.div className="story-img" variants={fadeUp}><img src={IMG.gold} alt="The Acuroot set" loading="lazy" /></motion.div>
-        <motion.div className="story-copy" variants={fadeUp}>
-          <span className="eyebrow">Our story</span>
-          <h2>Made for the moment you finally slow down</h2>
-          <p>We started Acuroot around one small idea: that resting should be easy to reach for.<b className="grad-text"> No screens, no steps — just a mat and a breath.</b></p>
-          <p className="muted">Every order is an all-in-1 set — mat, pillow and bag — designed to live somewhere you will actually use it. Roll it out and the rest takes care of itself.</p>
-          <motion.a href="#buy" className="btn" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>Bring one home</motion.a>
-        </motion.div>
-      </div>
-    </Section>
-  )
-}
+const FEATURES = [
+  {
+    icon: '✦',
+    title: 'Prompt to website',
+    body: 'Describe what you want in plain words. Zooicha generates layout, copy, imagery and theme — a complete site, not a blank canvas.',
+  },
+  {
+    icon: '◳',
+    title: 'Edit anything visually',
+    body: 'Click any element and tweak it, or just ask. Drag, restyle, and rewrite with a live preview that updates instantly.',
+  },
+  {
+    icon: '⚡',
+    title: 'One-click publish',
+    body: 'Ship to a free zooicha.site domain or connect your own. Global CDN, SSL and analytics are wired up automatically.',
+  },
+  {
+    icon: '◑',
+    title: 'Responsive by default',
+    body: 'Every layout is crafted for phones, tablets and desktops out of the box. No breakpoints to babysit.',
+  },
+  {
+    icon: '⌘',
+    title: 'Clean, exportable code',
+    body: 'Need to take it further? Export production-ready React and Tailwind, or sync straight to your GitHub repo.',
+  },
+  {
+    icon: '◈',
+    title: 'SEO & speed built in',
+    body: 'Semantic markup, meta tags, OG images and 95+ Lighthouse scores come standard with every project.',
+  },
+]
 
-function Reviews() {
-  return (
-    <Section id="reviews">
-      <div className="wrap">
-        <motion.div className="section-head" variants={fadeUp}><span className="eyebrow">Loved by early customers</span><h2>Quiet moments, in their <span className="grad-text">own words</span></h2></motion.div>
-        <div className="reviews">
-          {REVIEWS.map((r, i) => (
-            <motion.blockquote key={i} className="review" variants={fadeUp} whileHover={{ y: -6, scale: 1.01 }}>
-              <Stars /><strong>{r.t}</strong><p>{r.b}</p><cite>— {r.who}</cite>
-            </motion.blockquote>
-          ))}
-        </div>
-      </div>
-    </Section>
-  )
-}
+const STEPS = [
+  {
+    n: '01',
+    title: 'Describe your idea',
+    body: 'Type a sentence about the site you want — your business, your style, your goal.',
+  },
+  {
+    n: '02',
+    title: 'Watch it build',
+    body: 'Zooicha drafts a full multi-section site with real copy and curated imagery in seconds.',
+  },
+  {
+    n: '03',
+    title: 'Refine & publish',
+    body: 'Polish it by clicking or chatting, then hit publish. Your site is live on the web.',
+  },
+]
 
-function Features() {
-  return (
-    <Section id="features">
-      <div className="wrap">
-        <motion.div className="section-head" variants={fadeUp}><span className="eyebrow">What is in the set</span><h2>Considered, where it counts</h2></motion.div>
-        <div className="features">
-          {FEATURES.map((f, i) => (
-            <motion.div key={f.title} className={`feature ${i % 2 ? 'reverse' : ''}`} variants={fadeUp}>
-              <motion.div className="feature-img" whileHover={{ scale: 1.03 }}><img src={f.img} alt={f.title} loading="lazy" /></motion.div>
-              <div className="feature-copy"><span className="feature-n grad-text">{i + 1}</span><h3>{f.title}</h3><p>{f.body}</p></div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </Section>
-  )
-}
+const PLANS = [
+  {
+    name: 'Free',
+    price: '$0',
+    cadence: 'forever',
+    tagline: 'For trying ideas out.',
+    features: ['3 published projects', 'zooicha.site subdomain', 'AI prompt builder', 'Community support'],
+    cta: 'Start free',
+    featured: false,
+  },
+  {
+    name: 'Pro',
+    price: '$19',
+    cadence: 'per month',
+    tagline: 'For makers shipping real sites.',
+    features: [
+      'Unlimited projects',
+      'Custom domains',
+      'Remove Zooicha badge',
+      'Code export (React + Tailwind)',
+      'Priority AI generations',
+    ],
+    cta: 'Go Pro',
+    featured: true,
+  },
+  {
+    name: 'Team',
+    price: '$59',
+    cadence: 'per month',
+    tagline: 'For studios and agencies.',
+    features: ['Everything in Pro', '5 team seats', 'Shared workspaces', 'Brand kits & templates', 'SSO & roles'],
+    cta: 'Start a team',
+    featured: false,
+  },
+]
 
-/* ---------- buy ---------- */
-function Buy({ store }) {
-  const { qty, setQty, color, setColor, bundle, fullPrice, saving, setModalOpen } = store
-  return (
-    <Section id="buy" className="buy">
-      <div className="wrap buy-grid">
-        <motion.div className="buy-media" variants={fadeUp}>
-          <div className="buy-art">
-            <AnimatePresence initial={false}>
-              <motion.img
-                key={color.img}
-                src={color.img}
-                alt={`Acuroot set in ${color.name}`}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3, ease: 'easeOut' }}
-              />
-            </AnimatePresence>
-            <span className="buy-art-tag">{color.name}</span>
-          </div>
-          <div className="thumbs">
-            {COLORS.map((c) => (
-              <button
-                key={c.name}
-                className={`thumb ${color.name === c.name ? 'selected' : ''}`}
-                onClick={() => setColor(c)}
-                aria-label={c.name}
-                title={c.name}
-              >
-                <img src={c.img} alt={c.name} loading="lazy" />
-                <span className="thumb-dot" style={{ background: c.hex }} />
-              </button>
-            ))}
-          </div>
-        </motion.div>
+const QUOTES = [
+  {
+    quote:
+      'I described my bakery in one sentence and had a live site before my coffee went cold. Zooicha is genuinely unreal.',
+    name: 'Mara Okafor',
+    role: 'Owner, Crumb & Co.',
+  },
+  {
+    quote:
+      'We ship client landing pages 5x faster now. The exported code is clean enough that our devs actually keep it.',
+    name: 'Devin Walsh',
+    role: 'Founder, Northlight Studio',
+  },
+  {
+    quote:
+      'No templates that all look the same. Every site it builds feels designed for the brief. It just gets it.',
+    name: 'Priya Raman',
+    role: 'Indie maker',
+  },
+]
 
-        <motion.div className="buy-copy" variants={fadeUp}>
-          <span className="eyebrow">All-in-1 bundle · mat + pillow + bag</span>
-          <h2>The Acuroot Set</h2>
-          <div className="price-row" id="buy-options">
-            <span className="price">{money(bundle.price)}</span>
-            {saving > 0 && <span className="was">{money(fullPrice)}</span>}
-            {saving > 0 && <span className="save-pill">Save {money(saving)}</span>}
-          </div>
+const FAQS = [
+  {
+    q: 'Do I need to know how to code?',
+    a: 'Not at all. Zooicha builds and edits everything from natural language. Developers can export clean React + Tailwind if they want to go deeper.',
+  },
+  {
+    q: 'Can I use my own domain?',
+    a: 'Yes. Free sites get a zooicha.site subdomain, and Pro plans let you connect any custom domain with automatic SSL.',
+  },
+  {
+    q: 'Who owns the sites I create?',
+    a: 'You do — fully. Your content, your code, your brand. Export or take it anywhere, anytime.',
+  },
+  {
+    q: 'Is there really a free plan?',
+    a: 'Yep. You can build and publish up to three projects for free, forever, no credit card required.',
+  },
+]
 
-          <div className="opt-label">Choose your bundle</div>
-          <div className="bundles">
-            {BUNDLES.map((b) => (
-              <button key={b.qty} className={`bundle ${qty === b.qty ? 'selected' : ''}`} onClick={() => setQty(b.qty)}>
-                {b.tag && <span className="bundle-tag">{b.tag}</span>}
-                <strong>{b.label}</strong>
-                <span className="bundle-price">{money(b.price)}</span>
-                <span className="bundle-sub">{b.sub}</span>
-              </button>
-            ))}
-          </div>
-
-          <div className="opt-label">Colour — <b>{color.name}</b></div>
-          <div className="swatches">
-            {COLORS.map((c) => (
-              <button key={c.name} className={`swatch ${color.name === c.name ? 'selected' : ''}`} style={{ background: c.hex }} onClick={() => setColor(c)} title={c.name} aria-label={c.name} />
-            ))}
-          </div>
-
-          <ul className="perks">
-            <li>✔ Mat, pillow &amp; carry bag</li>
-            <li>✔ 4 colourways</li>
-            <li>✔ Free shipping over $60</li>
-            <li>✔ 30-day happiness guarantee</li>
-          </ul>
-
-          <motion.button className="btn btn-lg" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }} onClick={() => setModalOpen(true)}>
-            Add to cart — {money(bundle.price)}
-          </motion.button>
-          {!shopifyConfigured && <p className="demo-note">Demo mode · connect Shopify in <code>.env</code> to enable real checkout</p>}
-        </motion.div>
-      </div>
-    </Section>
-  )
-}
-
-/* ---------- checkout modal ---------- */
-function CheckoutModal({ store }) {
-  const { modalOpen, setModalOpen, bundle, color, saving, protect, setProtect, total, loading, checkout } = store
-  return (
-    <AnimatePresence>
-      {modalOpen && (
-        <motion.div className="modal-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setModalOpen(false)}>
-          <motion.div className="modal" initial={{ opacity: 0, y: 40, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 30, scale: 0.97 }} transition={{ type: 'spring', stiffness: 260, damping: 24 }} onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close" onClick={() => setModalOpen(false)} aria-label="Close">×</button>
-            <span className="eyebrow">One last thing</span>
-            <h3 className="modal-title">Protect your calm for just $5?</h3>
-            <p className="modal-sub">Add <b>Acuroot Care</b> and we’ll cover accidental damage or faults for your first <b>30 days</b> — a free replacement, no questions asked.</p>
-
-            <button className={`care ${protect ? 'on' : ''}`} onClick={() => setProtect(!protect)}>
-              <span className={`care-check ${protect ? 'on' : ''}`}>{protect ? '✓' : ''}</span>
-              <span className="care-text"><strong>Acuroot Care — 30-day protection</strong><small>Accidental damage + warranty · free replacement</small></span>
-              <span className="care-price">+${PROTECTION_PRICE}</span>
-            </button>
-
-            <div className="summary">
-              <div className="summary-row"><span>{bundle.label} · {color.name}</span><span>{money(bundle.price)}</span></div>
-              {saving > 0 && <div className="summary-row muted"><span>Bundle saving</span><span>−{money(saving)}</span></div>}
-              {protect && <div className="summary-row"><span>Acuroot Care (30-day)</span><span>+{money(PROTECTION_PRICE)}</span></div>}
-              <div className="summary-row total"><span>Total</span><span>{money(total)}</span></div>
-            </div>
-
-            <motion.button className="btn btn-lg modal-cta" whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={checkout} disabled={loading}>
-              {loading ? 'Opening checkout…' : `Continue to checkout — ${money(total)}`}
-            </motion.button>
-            <button className="modal-skip" onClick={checkout} disabled={loading}>No thanks, continue without protection</button>
-          </motion.div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  )
-}
-
-function Faq() {
-  const [open, setOpen] = useState(0)
-  return (
-    <Section id="faq" className="faq">
-      <div className="wrap faq-wrap">
-        <motion.div className="section-head" variants={fadeUp}><span className="eyebrow">Good to know</span><h2>Questions, answered</h2></motion.div>
-        <div className="faq-list">
-          {FAQS.map((f, i) => {
-            const isOpen = open === i
-            return (
-              <motion.div key={i} className="faq-item" variants={fadeUp}>
-                <button className="faq-q" onClick={() => setOpen(isOpen ? -1 : i)}><span>{f.q}</span><motion.span className="faq-icon" animate={{ rotate: isOpen ? 45 : 0 }}>+</motion.span></button>
-                <AnimatePresence initial={false}>
-                  {isOpen && (
-                    <motion.div className="faq-a" initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}>
-                      <p>{f.a}</p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            )
-          })}
-        </div>
-      </div>
-    </Section>
-  )
-}
-
-function Footer() {
-  return (
-    <footer className="footer">
-      <div className="wrap footer-inner">
-        <a href="#top" className="logo"><Logo /></a>
-        <p className="muted">A calmer ten minutes a day.</p>
-        <div className="footer-links"><a href="#benefits">Benefits</a><a href="#story">Our story</a><a href="#reviews">Loved by</a><a href="#faq">FAQ</a></div>
-        <small className="muted">© {new Date().getFullYear()} Acuroot. This product is a wellness aid and is not intended to diagnose or treat any condition.</small>
-      </div>
-    </footer>
-  )
-}
+/* ------------------------------------------------------------------ */
+/*  App                                                                */
+/* ------------------------------------------------------------------ */
 
 export default function App() {
-  const { scrollYProgress } = useScroll()
-  const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 30 })
-  const store = useStore()
+  const [scrolled, setScrolled] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   return (
-    <>
-      <motion.div className="scroll-bar" style={{ scaleX: progress }} />
-      <Nav />
-      <Hero store={store} />
-      <Marquee />
-      <Benefits />
-      <Story />
-      <Reviews />
-      <Features />
-      <Buy store={store} />
-      <Faq />
-      <Footer />
-      <CheckoutModal store={store} />
-    </>
+    <div id="top">
+      {/* ---------------- Nav ---------------- */}
+      <header className={`nav ${scrolled ? 'is-scrolled' : ''}`}>
+        <div className="wrap nav-inner">
+          <Logo />
+          <nav className={`nav-links ${menuOpen ? 'open' : ''}`}>
+            <a href="#features" onClick={() => setMenuOpen(false)}>Features</a>
+            <a href="#how" onClick={() => setMenuOpen(false)}>How it works</a>
+            <a href="#pricing" onClick={() => setMenuOpen(false)}>Pricing</a>
+            <a href="#faq" onClick={() => setMenuOpen(false)}>FAQ</a>
+          </nav>
+          <div className="nav-cta">
+            <a href="#" className="btn btn-ghost">Sign in</a>
+            <a href="#start" className="btn btn-primary">Start building</a>
+          </div>
+          <button
+            className="nav-burger"
+            aria-label="Toggle menu"
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((o) => !o)}
+          >
+            <span /><span /><span />
+          </button>
+        </div>
+      </header>
+
+      {/* ---------------- Hero ---------------- */}
+      <section className="hero">
+        <div className="wrap hero-inner">
+          <Reveal>
+            <a href="#start" className="badge">
+              <span className="badge-dot" /> Now in public beta — build for free
+            </a>
+          </Reveal>
+          <Reveal delay={0.05}>
+            <h1 className="hero-title">
+              Describe it.
+              <br />
+              <span className="grad-text">Zooicha builds it.</span>
+            </h1>
+          </Reveal>
+          <Reveal delay={0.12}>
+            <p className="hero-sub">
+              The AI website builder that turns a single sentence into a complete, responsive,
+              ready-to-publish website — copy, design and all. No templates. No code required.
+            </p>
+          </Reveal>
+          <Reveal delay={0.18}>
+            <div className="hero-actions">
+              <a href="#start" className="btn btn-primary btn-lg">Start building free →</a>
+              <a href="#how" className="btn btn-ghost btn-lg">See how it works</a>
+            </div>
+          </Reveal>
+          <Reveal delay={0.24} className="hero-note">
+            <span>No credit card</span><span className="sep">•</span>
+            <span>Live in under a minute</span><span className="sep">•</span>
+            <span>Export anytime</span>
+          </Reveal>
+
+          <Reveal delay={0.3} className="hero-demo-wrap">
+            <HeroDemo />
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ---------------- Trust strip ---------------- */}
+      <section className="trust">
+        <div className="wrap">
+          <p className="trust-label">Trusted by 40,000+ founders, freelancers and teams</p>
+          <div className="trust-row">
+            {['Northwind', 'Loomly', 'Brightseed', 'Pagecraft', 'Vela', 'Studio Mono'].map((n) => (
+              <span key={n} className="trust-logo">{n}</span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ---------------- Features ---------------- */}
+      <section id="features" className="section">
+        <div className="wrap">
+          <Reveal className="section-head">
+            <span className="eyebrow">Everything you need</span>
+            <h2 className="section-title">A whole web studio, driven by a sentence</h2>
+            <p className="section-sub">
+              From first prompt to published site, Zooicha handles the parts that usually take days.
+            </p>
+          </Reveal>
+          <div className="feat-grid">
+            {FEATURES.map((f, i) => (
+              <Reveal key={f.title} delay={i * 0.05}>
+                <div className="feat-card">
+                  <span className="feat-icon" aria-hidden="true">{f.icon}</span>
+                  <h3>{f.title}</h3>
+                  <p>{f.body}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ---------------- How it works ---------------- */}
+      <section id="how" className="section section-alt">
+        <div className="wrap">
+          <Reveal className="section-head">
+            <span className="eyebrow">How it works</span>
+            <h2 className="section-title">Three steps from idea to live</h2>
+          </Reveal>
+          <div className="steps">
+            {STEPS.map((s, i) => (
+              <Reveal key={s.n} delay={i * 0.08}>
+                <div className="step">
+                  <span className="step-n">{s.n}</span>
+                  <h3>{s.title}</h3>
+                  <p>{s.body}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ---------------- Pricing ---------------- */}
+      <section id="pricing" className="section">
+        <div className="wrap">
+          <Reveal className="section-head">
+            <span className="eyebrow">Pricing</span>
+            <h2 className="section-title">Start free. Upgrade when you ship.</h2>
+            <p className="section-sub">Simple plans that scale with you. Cancel anytime.</p>
+          </Reveal>
+          <div className="plans">
+            {PLANS.map((p, i) => (
+              <Reveal key={p.name} delay={i * 0.06}>
+                <div className={`plan ${p.featured ? 'plan-featured' : ''}`}>
+                  {p.featured && <span className="plan-tag">Most popular</span>}
+                  <h3 className="plan-name">{p.name}</h3>
+                  <p className="plan-tagline">{p.tagline}</p>
+                  <div className="plan-price">
+                    <span className="plan-amount">{p.price}</span>
+                    <span className="plan-cadence">/ {p.cadence}</span>
+                  </div>
+                  <ul className="plan-feats">
+                    {p.features.map((feat) => (
+                      <li key={feat}><span className="check">✓</span>{feat}</li>
+                    ))}
+                  </ul>
+                  <a
+                    href="#start"
+                    className={`btn ${p.featured ? 'btn-primary' : 'btn-outline'} btn-block`}
+                  >
+                    {p.cta}
+                  </a>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ---------------- Testimonials ---------------- */}
+      <section className="section section-alt">
+        <div className="wrap">
+          <Reveal className="section-head">
+            <span className="eyebrow">Loved by builders</span>
+            <h2 className="section-title">People ship things with Zooicha</h2>
+          </Reveal>
+          <div className="quotes">
+            {QUOTES.map((q, i) => (
+              <Reveal key={q.name} delay={i * 0.07}>
+                <figure className="quote">
+                  <blockquote>“{q.quote}”</blockquote>
+                  <figcaption>
+                    <span className="avatar" aria-hidden="true">{q.name[0]}</span>
+                    <span>
+                      <strong>{q.name}</strong>
+                      <em>{q.role}</em>
+                    </span>
+                  </figcaption>
+                </figure>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ---------------- FAQ ---------------- */}
+      <section id="faq" className="section">
+        <div className="wrap faq-wrap">
+          <Reveal className="section-head">
+            <span className="eyebrow">FAQ</span>
+            <h2 className="section-title">Questions, answered</h2>
+          </Reveal>
+          <div className="faq">
+            {FAQS.map((item, i) => (
+              <Reveal key={item.q} delay={i * 0.04}>
+                <details className="faq-item">
+                  <summary>{item.q}<span className="faq-plus" aria-hidden="true">+</span></summary>
+                  <p>{item.a}</p>
+                </details>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ---------------- Final CTA ---------------- */}
+      <section id="start" className="cta">
+        <div className="wrap">
+          <Reveal className="cta-card">
+            <h2 className="cta-title">Your next website is one sentence away</h2>
+            <p className="cta-sub">
+              Join 40,000+ people building faster with Zooicha. Free to start — live in a minute.
+            </p>
+            <form className="cta-form" onSubmit={(e) => e.preventDefault()}>
+              <input
+                type="text"
+                className="cta-input"
+                placeholder="Describe the site you want to build…"
+                aria-label="Describe your website"
+              />
+              <button type="submit" className="btn btn-primary btn-lg">Build it ✦</button>
+            </form>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ---------------- Footer ---------------- */}
+      <footer className="footer">
+        <div className="wrap footer-inner">
+          <div className="footer-brand">
+            <Logo />
+            <p>The AI website builder. Describe it, and we build it.</p>
+          </div>
+          <div className="footer-cols">
+            <div>
+              <h4>Product</h4>
+              <a href="#features">Features</a>
+              <a href="#pricing">Pricing</a>
+              <a href="#how">How it works</a>
+            </div>
+            <div>
+              <h4>Company</h4>
+              <a href="#">About</a>
+              <a href="#">Blog</a>
+              <a href="#">Careers</a>
+            </div>
+            <div>
+              <h4>Legal</h4>
+              <a href="#">Privacy</a>
+              <a href="#">Terms</a>
+              <a href="#">Security</a>
+            </div>
+          </div>
+        </div>
+        <div className="wrap footer-bottom">
+          <span>© {new Date().getFullYear()} Zooicha. All rights reserved.</span>
+          <span className="footer-made">Built with Zooicha ✦</span>
+        </div>
+      </footer>
+    </div>
   )
 }
