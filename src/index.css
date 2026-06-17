@@ -1,0 +1,102 @@
+:root {
+  --bg: #f6f1e9;
+  --bg-2: #efe7da;
+  --card: #fffdfa;
+  --text: #5b5247;
+  --text-h: #241d15;
+  --muted: #8c8173;
+  --border: rgba(40, 28, 16, 0.12);
+  --accent: #b06a40;
+  --accent-2: #c4895f;
+  --accent-soft: rgba(176, 106, 64, 0.1);
+  --star: #bb8a44;
+
+  --sans: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --maxw: 1180px;
+
+  font-family: var(--sans);
+  color: var(--text);
+  background: var(--bg);
+  color-scheme: light;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 84px;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  background:
+    radial-gradient(1100px 700px at 78% -8%, rgba(176, 106, 64, 0.06), transparent 60%),
+    linear-gradient(180deg, #f8f3ec, var(--bg) 40%);
+  background-attachment: fixed;
+}
+
+#root {
+  width: 100%;
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--display);
+  color: var(--text-h);
+  font-weight: 600;
+  line-height: 1.08;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+.wrap {
+  width: 100%;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.grad-text {
+  color: var(--accent);
+}
+
+.tm {
+  font-family: var(--sans);
+  font-size: 0.42em;
+  font-weight: 600;
+  vertical-align: super;
+  letter-spacing: 0;
+  margin-left: 2px;
+  color: var(--muted);
+}
