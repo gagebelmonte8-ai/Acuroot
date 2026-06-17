@@ -1,24 +1,31 @@
 :root {
-  --bg: #f6f1e9;
-  --bg-2: #efe7da;
-  --card: #fffdfa;
-  --text: #5b5247;
-  --text-h: #241d15;
-  --muted: #8c8173;
-  --border: rgba(40, 28, 16, 0.12);
-  --accent: #b06a40;
-  --accent-2: #c4895f;
-  --accent-soft: rgba(176, 106, 64, 0.1);
-  --star: #bb8a44;
+  --bg: #07070d;
+  --bg-2: #0c0c16;
+  --surface: #11111d;
+  --surface-2: #161626;
+  --card: #13131f;
+  --text: #b7b7c9;
+  --text-h: #f4f4fb;
+  --muted: #7c7c93;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-2: rgba(255, 255, 255, 0.14);
+
+  --violet: #8b5cff;
+  --blue: #3b82f6;
+  --cyan: #22d3ee;
+  --accent: #8b5cff;
+  --accent-soft: rgba(139, 92, 255, 0.12);
+
+  --grad: linear-gradient(100deg, #8b5cff 0%, #3b82f6 50%, #22d3ee 100%);
 
   --sans: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
-  --display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --display: 'Space Grotesk', 'Inter', system-ui, sans-serif;
   --maxw: 1180px;
 
   font-family: var(--sans);
   color: var(--text);
   background: var(--bg);
-  color-scheme: light;
+  color-scheme: dark;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -29,15 +36,17 @@
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 84px;
+  scroll-padding-top: 88px;
 }
 
 body {
   margin: 0;
   overflow-x: hidden;
+  color: var(--text);
   background:
-    radial-gradient(1100px 700px at 78% -8%, rgba(176, 106, 64, 0.06), transparent 60%),
-    linear-gradient(180deg, #f8f3ec, var(--bg) 40%);
+    radial-gradient(900px 600px at 82% -6%, rgba(139, 92, 255, 0.16), transparent 60%),
+    radial-gradient(800px 600px at 8% 4%, rgba(34, 211, 238, 0.1), transparent 55%),
+    var(--bg);
   background-attachment: fixed;
 }
 
@@ -52,14 +61,14 @@ h3 {
   font-family: var(--display);
   color: var(--text-h);
   font-weight: 600;
-  line-height: 1.08;
-  letter-spacing: -0.01em;
+  line-height: 1.06;
+  letter-spacing: -0.02em;
   margin: 0;
 }
 
 p {
   margin: 0;
-  line-height: 1.6;
+  line-height: 1.62;
 }
 
 a {
@@ -70,6 +79,11 @@ a {
 img {
   display: block;
   max-width: 100%;
+}
+
+::selection {
+  background: rgba(139, 92, 255, 0.35);
+  color: #fff;
 }
 
 .wrap {
@@ -84,17 +98,17 @@ img {
   letter-spacing: 0.22em;
   font-size: 11.5px;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--violet);
 }
 
 .grad-text {
   background: linear-gradient(
     100deg,
-    var(--accent) 0%,
-    var(--accent-2) 28%,
-    #dcab6c 50%,
-    var(--accent-2) 72%,
-    var(--accent) 100%
+    #8b5cff 0%,
+    #6aa8ff 30%,
+    #22d3ee 55%,
+    #6aa8ff 78%,
+    #8b5cff 100%
   );
   background-size: 220% auto;
   -webkit-background-clip: text;
@@ -108,14 +122,4 @@ img {
 }
 @media (prefers-reduced-motion: reduce) {
   .grad-text { animation: none; }
-}
-
-.tm {
-  font-family: var(--sans);
-  font-size: 0.42em;
-  font-weight: 600;
-  vertical-align: super;
-  letter-spacing: 0;
-  margin-left: 2px;
-  color: var(--muted);
 }

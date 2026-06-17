@@ -1,16 +1,49 @@
-# React + Vite
+# Zooicha — The AI Product Page Builder for Shopify
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Marketing site for **Zooicha**, an AI product-page builder for ecommerce and
+dropshipping. Paste any product URL (AliExpress, Amazon, TikTok Shop, Temu) and
+Zooicha generates a high-converting store page — AI copy, polished images,
+reviews and offers — in seconds, then publishes to Shopify in one click.
 
-Currently, two official plugins are available:
+Positioned as a faster, better-priced alternative to PagePilot, adding an AI
+image studio, built-in A/B testing and conversion analytics.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Built with React + Vite and the [`motion`](https://motion.dev) animation
+library. Single-page landing site with a live "paste-a-link" hero demo, feature
+grid, a vs-PagePilot comparison table, pricing, testimonials and FAQ — plus an
+interactive **Studio** at `#/studio`.
 
-## React Compiler
+## The Studio
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Visit `#/studio` (or paste a URL on the landing page and hit *Generate*) to try
+the interactive builder: paste a product URL, watch the generation steps run,
+then get an **editable, publishable product page** — title, headline and price
+are live-editable, with desktop/mobile preview.
 
-## Expanding the ESLint configuration
+> Note: generation is simulated client-side (deterministic from the URL) — there
+> is no backend scraping or real Shopify publishing yet. It demonstrates the
+> intended product flow.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Develop
+
+```bash
+npm install
+npm run dev      # start the dev server (Vite)
+npm run build    # production build to dist/
+npm run preview  # preview the production build
+npm run lint     # eslint
+```
+
+## Project structure
+
+- `index.html` — document shell, fonts and meta tags
+- `src/main.jsx` — React entry point
+- `src/App.jsx` — the full landing page (sections + hero demo)
+- `src/App.css` — component styles
+- `src/index.css` — design tokens (colors, type, layout) and resets
+- `public/favicon.svg` — gradient "Z" mark
+
+## Deploy
+
+Configured for [Netlify](netlify.toml): build with `npm run build`,
+publish `dist/`, with an SPA fallback redirect.
