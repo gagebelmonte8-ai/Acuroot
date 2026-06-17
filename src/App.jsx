@@ -1,4 +1,4 @@
-import { useState, useRef, lazy, Suspense } from 'react'
+import { useState, useRef } from 'react'
 import {
   motion,
   AnimatePresence,
@@ -9,8 +9,6 @@ import {
 } from 'motion/react'
 import './App.css'
 import { cartUrl, VARIANTS, CARE_VARIANT, shopifyConfigured } from './lib/shopify'
-
-const Letter3D = lazy(() => import('./Letter3D'))
 
 /* ---------- product imagery (AliExpress CDN) ---------- */
 const ae = (hash) => `https://ae01.alicdn.com/kf/${hash}.jpg`
@@ -115,32 +113,8 @@ function useStore() {
 }
 
 /* ---------- brand / logo ---------- */
-function LogoMark({ size = 30 }) {
-  return (
-    <motion.svg
-      className="logo-mark"
-      width={size}
-      height={size}
-      viewBox="0 0 100 100"
-      whileHover={{ rotate: -6, scale: 1.08 }}
-      transition={{ type: 'spring', stiffness: 320, damping: 14 }}
-      aria-hidden="true"
-    >
-      <g fill="none" stroke="#b06a40" strokeWidth="11" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M27 82 50 18 73 82" />
-        <path d="M37 60h26" />
-      </g>
-    </motion.svg>
-  )
-}
-
-function Logo({ size = 32 }) {
-  return (
-    <span className="brand">
-      <LogoMark size={size} />
-      <span className="logo-word">Acuroot<sup className="tm">™</sup></span>
-    </span>
-  )
+function Logo() {
+  return <span className="logo-word">Acuroot<sup className="tm">™</sup></span>
 }
 
 /* ---------- sections ---------- */
@@ -241,11 +215,6 @@ function Hero({ store }) {
       <div className="hero-aura" aria-hidden="true" />
       <div className="wrap hero-grid">
         <div className="hero-copy">
-          <div className="hero-mark3d" title="Drag to rotate · click to spin">
-            <Suspense fallback={<span className="hero-mark3d-fallback">A</span>}>
-              <Letter3D />
-            </Suspense>
-          </div>
           <motion.span className="eyebrow" variants={fadeUp} initial="hidden" animate="show">The all-in-1 calm kit · 50% off</motion.span>
           <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}>
             Rest your back into <span className="grad-text">stillness</span>
@@ -534,7 +503,7 @@ function Footer() {
   return (
     <footer className="footer">
       <div className="wrap footer-inner">
-        <a href="#top" className="logo"><Logo size={34} /></a>
+        <a href="#top" className="logo"><Logo /></a>
         <p className="muted">A calmer ten minutes a day.</p>
         <div className="footer-links"><a href="#benefits">Benefits</a><a href="#story">Our story</a><a href="#reviews">Loved by</a><a href="#faq">FAQ</a></div>
         <small className="muted">© {new Date().getFullYear()} Acuroot. This product is a wellness aid and is not intended to diagnose or treat any condition.</small>
