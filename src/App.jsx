@@ -47,17 +47,17 @@ const Logo = () => (
 )
 
 /* ------------------------------------------------------------------ */
-/*  Animated hero prompt demo                                          */
+/*  Animated hero demo — paste a product URL, get a page               */
 /* ------------------------------------------------------------------ */
 
-const PROMPTS = [
-  'a minimalist portfolio for a film photographer',
-  'a landing page for my plant-based protein brand',
-  'an online store for handmade ceramic mugs',
-  'a booking site for a downtown barbershop',
+const URLS = [
+  'aliexpress.com/item/portable-blender',
+  'amazon.com/dp/posture-corrector-pro',
+  'tiktok.com/shop/galaxy-star-projector',
+  'temu.com/heated-eye-massager',
 ]
 
-function useTypewriter(phrases, { typeMs = 42, holdMs = 1400, deleteMs = 18 } = {}) {
+function useTypewriter(phrases, { typeMs = 46, holdMs = 1700, deleteMs = 20 } = {}) {
   const [text, setText] = useState('')
   const [done, setDone] = useState(false)
 
@@ -99,7 +99,7 @@ function useTypewriter(phrases, { typeMs = 42, holdMs = 1400, deleteMs = 18 } = 
 }
 
 function HeroDemo() {
-  const { text, done } = useTypewriter(PROMPTS)
+  const { text, done } = useTypewriter(URLS)
 
   return (
     <div className="demo">
@@ -112,40 +112,53 @@ function HeroDemo() {
 
       <div className="demo-body">
         <div className="prompt">
-          <span className="prompt-spark" aria-hidden="true">✦</span>
+          <span className="prompt-spark" aria-hidden="true">🔗</span>
           <span className="prompt-text">
             {text}
             <span className="caret" />
           </span>
+          <span className={`prompt-go ${done ? 'on' : ''}`}>Generate ✦</span>
         </div>
 
         <div className="build-row">
-          <span className={`build-pill ${done ? 'on' : ''}`}>Layout</span>
+          <span className={`build-pill ${done ? 'on' : ''}`}>Scraping</span>
           <span className={`build-pill ${done ? 'on' : ''}`} style={{ transitionDelay: '.12s' }}>
-            Copy
+            Copywriting
           </span>
           <span className={`build-pill ${done ? 'on' : ''}`} style={{ transitionDelay: '.24s' }}>
             Images
           </span>
           <span className={`build-pill ${done ? 'on' : ''}`} style={{ transitionDelay: '.36s' }}>
-            Deploy
+            Publishing
           </span>
         </div>
 
-        <div className={`canvas ${done ? 'on' : ''}`}>
-          <div className="sk sk-nav">
-            <span className="sk-logo" />
-            <span className="sk-links" />
+        {/* generated product page preview */}
+        <div className={`canvas pdp ${done ? 'on' : ''}`}>
+          <div className="pdp-media">
+            <span className="pdp-img" />
+            <div className="pdp-thumbs">
+              <span /><span /><span />
+            </div>
           </div>
-          <div className="sk-hero">
+          <div className="pdp-info">
+            <span className="sk-line w80" />
+            <div className="pdp-stars">
+              <span className="stars">★★★★★</span>
+              <em>1,204 reviews</em>
+            </div>
+            <div className="pdp-price">
+              <strong>$39</strong>
+              <s>$79</s>
+              <span className="pdp-save">50% OFF</span>
+            </div>
+            <span className="sk-line w90" />
             <span className="sk-line w70" />
-            <span className="sk-line w50" />
-            <span className="sk-btn" />
-          </div>
-          <div className="sk-grid">
-            <span className="sk-card" />
-            <span className="sk-card" />
-            <span className="sk-card" />
+            <span className="pdp-cart">Add to cart</span>
+            <div className="pdp-badges">
+              <span>✓ Free shipping</span>
+              <span>✓ 30-day returns</span>
+            </div>
           </div>
         </div>
       </div>
@@ -159,53 +172,63 @@ function HeroDemo() {
 
 const FEATURES = [
   {
-    icon: '✦',
-    title: 'Prompt to website',
-    body: 'Describe what you want in plain words. Zooicha generates layout, copy, imagery and theme — a complete site, not a blank canvas.',
+    icon: '🔗',
+    title: 'Paste any product URL',
+    body: 'Drop a link from AliExpress, Amazon, TikTok Shop or Temu. Zooicha pulls specs, images and reviews and rebuilds them into a page engineered to convert.',
   },
   {
-    icon: '◳',
-    title: 'Edit anything visually',
-    body: 'Click any element and tweak it, or just ask. Drag, restyle, and rewrite with a live preview that updates instantly.',
+    icon: '✍️',
+    title: 'Copy that actually sells',
+    body: 'Conversion-trained AI writes benefit-led headlines, bullets, FAQs and urgency — in 30+ languages, tuned to your product and niche.',
+  },
+  {
+    icon: '🎨',
+    title: 'Built-in AI image studio',
+    body: 'Auto-remove busy backgrounds, generate lifestyle shots, and assemble scroll-stopping galleries. No designer and no Photoshop required.',
   },
   {
     icon: '⚡',
-    title: 'One-click publish',
-    body: 'Ship to a free zooicha.site domain or connect your own. Global CDN, SSL and analytics are wired up automatically.',
+    title: '1-click Shopify import',
+    body: 'Push a finished page straight into your store as a product or landing page — your theme, fonts and tracking pixels stay intact.',
   },
   {
-    icon: '◑',
-    title: 'Responsive by default',
-    body: 'Every layout is crafted for phones, tablets and desktops out of the box. No breakpoints to babysit.',
+    icon: '🧪',
+    title: 'A/B testing on autopilot',
+    body: 'Spin up page variants and let Zooicha route traffic to the winner automatically. Stop guessing which version converts.',
   },
   {
-    icon: '⌘',
-    title: 'Clean, exportable code',
-    body: 'Need to take it further? Export production-ready React and Tailwind, or sync straight to your GitHub repo.',
-  },
-  {
-    icon: '◈',
-    title: 'SEO & speed built in',
-    body: 'Semantic markup, meta tags, OG images and 95+ Lighthouse scores come standard with every project.',
+    icon: '📈',
+    title: 'Live winning-product feed',
+    body: 'A daily feed of trending, high-margin products with saturation and ad data — so you build pages for proven winners, not duds.',
   },
 ]
 
 const STEPS = [
   {
     n: '01',
-    title: 'Describe your idea',
-    body: 'Type a sentence about the site you want — your business, your style, your goal.',
+    title: 'Paste a product link',
+    body: 'Drop in a URL from any major marketplace — or pick a product straight from your Shopify catalog.',
   },
   {
     n: '02',
-    title: 'Watch it build',
-    body: 'Zooicha drafts a full multi-section site with real copy and curated imagery in seconds.',
+    title: 'Zooicha builds the page',
+    body: 'In seconds you get a full product page: persuasive copy, clean images, reviews, offers and trust badges.',
   },
   {
     n: '03',
-    title: 'Refine & publish',
-    body: 'Polish it by clicking or chatting, then hit publish. Your site is live on the web.',
+    title: 'Tweak & push live',
+    body: 'Edit by clicking or chatting, then publish to Shopify or a hosted Zooicha page in one click.',
   },
+]
+
+const COMPARE = [
+  { label: 'Time to first page', z: '~30 seconds', p: '~60 seconds', m: 'Hours of work' },
+  { label: 'Import sources', z: 'AliExpress, Amazon, TikTok Shop, Temu + more', p: 'AliExpress & Amazon', m: 'Copy/paste by hand' },
+  { label: 'AI image studio', z: true, p: 'Limited', m: false },
+  { label: 'Built-in A/B testing', z: true, p: false, m: false },
+  { label: 'Conversion analytics', z: true, p: false, m: 'Third-party add-ons' },
+  { label: 'Free pages to start', z: '5', p: '3', m: '—' },
+  { label: 'Starting price', z: '$0', p: '$39 / mo', m: '—' },
 ]
 
 const PLANS = [
@@ -213,33 +236,33 @@ const PLANS = [
     name: 'Free',
     price: '$0',
     cadence: 'forever',
-    tagline: 'For trying ideas out.',
-    features: ['3 published projects', 'zooicha.site subdomain', 'AI prompt builder', 'Community support'],
+    tagline: 'For your first product tests.',
+    features: ['5 product pages', 'All AI features', 'Hosted preview links', 'Community support'],
     cta: 'Start free',
     featured: false,
   },
   {
-    name: 'Pro',
-    price: '$19',
+    name: 'Growth',
+    price: '$29',
     cadence: 'per month',
-    tagline: 'For makers shipping real sites.',
+    tagline: 'For sellers shipping real offers.',
     features: [
-      'Unlimited projects',
-      'Custom domains',
-      'Remove Zooicha badge',
-      'Code export (React + Tailwind)',
-      'Priority AI generations',
+      'Unlimited product pages',
+      '3 Shopify stores',
+      'AI image studio',
+      'A/B testing & analytics',
+      'Winning-product feed',
     ],
-    cta: 'Go Pro',
+    cta: 'Start 7-day trial',
     featured: true,
   },
   {
-    name: 'Team',
-    price: '$59',
+    name: 'Scale',
+    price: '$79',
     cadence: 'per month',
-    tagline: 'For studios and agencies.',
-    features: ['Everything in Pro', '5 team seats', 'Shared workspaces', 'Brand kits & templates', 'SSO & roles'],
-    cta: 'Start a team',
+    tagline: 'For agencies and big catalogs.',
+    features: ['Everything in Growth', 'Unlimited stores', 'Team seats & roles', 'API access', 'Dedicated manager'],
+    cta: 'Talk to us',
     featured: false,
   },
 ]
@@ -247,40 +270,44 @@ const PLANS = [
 const QUOTES = [
   {
     quote:
-      'I described my bakery in one sentence and had a live site before my coffee went cold. Zooicha is genuinely unreal.',
-    name: 'Mara Okafor',
-    role: 'Owner, Crumb & Co.',
+      'Paste, generate, publish. I launched 12 product tests in an afternoon and two are already profitable.',
+    name: 'Marco Reyes',
+    role: 'Dropshipper, 6-figure store',
   },
   {
     quote:
-      'We ship client landing pages 5x faster now. The exported code is clean enough that our devs actually keep it.',
-    name: 'Devin Walsh',
-    role: 'Founder, Northlight Studio',
+      'Switched from PagePilot — the pages convert better and it’s literally half the price. The A/B testing sealed it.',
+    name: 'Hannah Lowe',
+    role: 'Founder, Vela Goods',
   },
   {
     quote:
-      'No templates that all look the same. Every site it builds feels designed for the brief. It just gets it.',
-    name: 'Priya Raman',
-    role: 'Indie maker',
+      'The image studio alone replaced our designer for product tests. It just picks the winning page for me.',
+    name: 'Daniel Kim',
+    role: 'Media buyer',
   },
 ]
 
 const FAQS = [
   {
-    q: 'Do I need to know how to code?',
-    a: 'Not at all. Zooicha builds and edits everything from natural language. Developers can export clean React + Tailwind if they want to go deeper.',
+    q: 'Where can I import products from?',
+    a: 'Any product URL — AliExpress, Amazon, TikTok Shop, Temu — or pick a product straight from your connected Shopify catalog. Zooicha pulls images, specs and reviews automatically.',
   },
   {
-    q: 'Can I use my own domain?',
-    a: 'Yes. Free sites get a zooicha.site subdomain, and Pro plans let you connect any custom domain with automatic SSL.',
+    q: 'How is Zooicha better than PagePilot?',
+    a: 'Faster generation, a full AI image studio, built-in A/B testing and conversion analytics, and more import sources — all at a lower price with a more generous free plan.',
   },
   {
-    q: 'Who owns the sites I create?',
-    a: 'You do — fully. Your content, your code, your brand. Export or take it anywhere, anytime.',
+    q: 'Do I need to know how to design or code?',
+    a: 'No. Paste a link and you get a finished, conversion-ready page. Everything is editable by clicking on it or just asking in plain language.',
+  },
+  {
+    q: 'Which stores does it publish to?',
+    a: 'One-click import to Shopify (as a product or landing page), or publish to a fast hosted Zooicha page. WooCommerce export is on the way.',
   },
   {
     q: 'Is there really a free plan?',
-    a: 'Yep. You can build and publish up to three projects for free, forever, no credit card required.',
+    a: 'Yes — build and publish up to 5 product pages for free, forever, with no credit card required.',
   },
 ]
 
@@ -308,12 +335,13 @@ export default function App() {
           <nav className={`nav-links ${menuOpen ? 'open' : ''}`}>
             <a href="#features" onClick={() => setMenuOpen(false)}>Features</a>
             <a href="#how" onClick={() => setMenuOpen(false)}>How it works</a>
+            <a href="#compare" onClick={() => setMenuOpen(false)}>Compare</a>
             <a href="#pricing" onClick={() => setMenuOpen(false)}>Pricing</a>
             <a href="#faq" onClick={() => setMenuOpen(false)}>FAQ</a>
           </nav>
           <div className="nav-cta">
             <a href="#" className="btn btn-ghost">Sign in</a>
-            <a href="#start" className="btn btn-primary">Start building</a>
+            <a href="#start" className="btn btn-primary">Build a page free</a>
           </div>
           <button
             className="nav-burger"
@@ -331,32 +359,32 @@ export default function App() {
         <div className="wrap hero-inner">
           <Reveal>
             <a href="#start" className="badge">
-              <span className="badge-dot" /> Now in public beta — build for free
+              <span className="badge-dot" /> Built for Shopify &amp; dropshipping — try it free
             </a>
           </Reveal>
           <Reveal delay={0.05}>
             <h1 className="hero-title">
-              Describe it.
+              Paste a product link.
               <br />
-              <span className="grad-text">Zooicha builds it.</span>
+              <span className="grad-text">Get a page that sells.</span>
             </h1>
           </Reveal>
           <Reveal delay={0.12}>
             <p className="hero-sub">
-              The AI website builder that turns a single sentence into a complete, responsive,
-              ready-to-publish website — copy, design and all. No templates. No code required.
+              Zooicha turns any product URL into a high-converting store page — AI copy, polished
+              images, reviews and offers — in seconds. Then ships it straight to Shopify in one click.
             </p>
           </Reveal>
           <Reveal delay={0.18}>
             <div className="hero-actions">
-              <a href="#start" className="btn btn-primary btn-lg">Start building free →</a>
-              <a href="#how" className="btn btn-ghost btn-lg">See how it works</a>
+              <a href="#start" className="btn btn-primary btn-lg">Build my first page free →</a>
+              <a href="#how" className="btn btn-ghost btn-lg">See it in action</a>
             </div>
           </Reveal>
           <Reveal delay={0.24} className="hero-note">
             <span>No credit card</span><span className="sep">•</span>
-            <span>Live in under a minute</span><span className="sep">•</span>
-            <span>Export anytime</span>
+            <span>Live in ~30 seconds</span><span className="sep">•</span>
+            <span>1-click Shopify import</span>
           </Reveal>
 
           <Reveal delay={0.3} className="hero-demo-wrap">
@@ -368,9 +396,9 @@ export default function App() {
       {/* ---------------- Trust strip ---------------- */}
       <section className="trust">
         <div className="wrap">
-          <p className="trust-label">Trusted by 40,000+ founders, freelancers and teams</p>
+          <p className="trust-label">Powering 40,000+ pages for stores selling on</p>
           <div className="trust-row">
-            {['Northwind', 'Loomly', 'Brightseed', 'Pagecraft', 'Vela', 'Studio Mono'].map((n) => (
+            {['Shopify', 'AliExpress', 'Amazon', 'TikTok Shop', 'Temu', 'WooCommerce'].map((n) => (
               <span key={n} className="trust-logo">{n}</span>
             ))}
           </div>
@@ -382,9 +410,10 @@ export default function App() {
         <div className="wrap">
           <Reveal className="section-head">
             <span className="eyebrow">Everything you need</span>
-            <h2 className="section-title">A whole web studio, driven by a sentence</h2>
+            <h2 className="section-title">From product link to a page that converts</h2>
             <p className="section-sub">
-              From first prompt to published site, Zooicha handles the parts that usually take days.
+              Zooicha handles the scraping, the copywriting, the images and the publishing — the parts
+              that usually eat your whole afternoon.
             </p>
           </Reveal>
           <div className="feat-grid">
@@ -406,7 +435,7 @@ export default function App() {
         <div className="wrap">
           <Reveal className="section-head">
             <span className="eyebrow">How it works</span>
-            <h2 className="section-title">Three steps from idea to live</h2>
+            <h2 className="section-title">Three steps from link to live</h2>
           </Reveal>
           <div className="steps">
             {STEPS.map((s, i) => (
@@ -422,13 +451,49 @@ export default function App() {
         </div>
       </section>
 
+      {/* ---------------- Comparison ---------------- */}
+      <section id="compare" className="section">
+        <div className="wrap">
+          <Reveal className="section-head">
+            <span className="eyebrow">Why Zooicha</span>
+            <h2 className="section-title">A better build than PagePilot</h2>
+            <p className="section-sub">
+              Same paste-a-link magic — plus the image studio, testing and analytics they make you
+              go elsewhere for. For less.
+            </p>
+          </Reveal>
+          <Reveal className="compare-wrap">
+            <table className="compare">
+              <thead>
+                <tr>
+                  <th className="c-label" />
+                  <th className="c-z">Zooicha</th>
+                  <th>PagePilot</th>
+                  <th>Doing it manually</th>
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARE.map((row) => (
+                  <tr key={row.label}>
+                    <td className="c-label">{row.label}</td>
+                    <td className="c-z">{renderCell(row.z)}</td>
+                    <td>{renderCell(row.p)}</td>
+                    <td>{renderCell(row.m)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Reveal>
+        </div>
+      </section>
+
       {/* ---------------- Pricing ---------------- */}
-      <section id="pricing" className="section">
+      <section id="pricing" className="section section-alt">
         <div className="wrap">
           <Reveal className="section-head">
             <span className="eyebrow">Pricing</span>
-            <h2 className="section-title">Start free. Upgrade when you ship.</h2>
-            <p className="section-sub">Simple plans that scale with you. Cancel anytime.</p>
+            <h2 className="section-title">Start free. Pay less than the rest.</h2>
+            <p className="section-sub">Simple plans that scale with your stores. Cancel anytime.</p>
           </Reveal>
           <div className="plans">
             {PLANS.map((p, i) => (
@@ -460,11 +525,11 @@ export default function App() {
       </section>
 
       {/* ---------------- Testimonials ---------------- */}
-      <section className="section section-alt">
+      <section className="section">
         <div className="wrap">
           <Reveal className="section-head">
-            <span className="eyebrow">Loved by builders</span>
-            <h2 className="section-title">People ship things with Zooicha</h2>
+            <span className="eyebrow">Loved by sellers</span>
+            <h2 className="section-title">Stores ship faster with Zooicha</h2>
           </Reveal>
           <div className="quotes">
             {QUOTES.map((q, i) => (
@@ -486,7 +551,7 @@ export default function App() {
       </section>
 
       {/* ---------------- FAQ ---------------- */}
-      <section id="faq" className="section">
+      <section id="faq" className="section section-alt">
         <div className="wrap faq-wrap">
           <Reveal className="section-head">
             <span className="eyebrow">FAQ</span>
@@ -509,18 +574,19 @@ export default function App() {
       <section id="start" className="cta">
         <div className="wrap">
           <Reveal className="cta-card">
-            <h2 className="cta-title">Your next website is one sentence away</h2>
+            <h2 className="cta-title">Turn your next product link into sales</h2>
             <p className="cta-sub">
-              Join 40,000+ people building faster with Zooicha. Free to start — live in a minute.
+              Join 40,000+ sellers building higher-converting pages with Zooicha. Free to start —
+              live in about 30 seconds.
             </p>
             <form className="cta-form" onSubmit={(e) => e.preventDefault()}>
               <input
                 type="text"
                 className="cta-input"
-                placeholder="Describe the site you want to build…"
-                aria-label="Describe your website"
+                placeholder="Paste a product URL (AliExpress, Amazon, TikTok Shop…)"
+                aria-label="Paste a product URL"
               />
-              <button type="submit" className="btn btn-primary btn-lg">Build it ✦</button>
+              <button type="submit" className="btn btn-primary btn-lg">Generate my page ✦</button>
             </form>
           </Reveal>
         </div>
@@ -531,14 +597,14 @@ export default function App() {
         <div className="wrap footer-inner">
           <div className="footer-brand">
             <Logo />
-            <p>The AI website builder. Describe it, and we build it.</p>
+            <p>The AI product-page builder for Shopify. Paste a link — get a page that sells.</p>
           </div>
           <div className="footer-cols">
             <div>
               <h4>Product</h4>
               <a href="#features">Features</a>
               <a href="#pricing">Pricing</a>
-              <a href="#how">How it works</a>
+              <a href="#compare">vs PagePilot</a>
             </div>
             <div>
               <h4>Company</h4>
@@ -561,4 +627,11 @@ export default function App() {
       </footer>
     </div>
   )
+}
+
+/* Render a comparison-table cell: booleans become ✓ / —, strings pass through. */
+function renderCell(value) {
+  if (value === true) return <span className="cell-yes">✓</span>
+  if (value === false) return <span className="cell-no">—</span>
+  return value
 }

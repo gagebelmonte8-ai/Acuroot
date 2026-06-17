@@ -1,11 +1,16 @@
-# Zooicha — The AI Website Builder
+# Zooicha — The AI Product Page Builder for Shopify
 
-Marketing site for **Zooicha**, an AI website builder that turns a single
-sentence into a complete, responsive, ready-to-publish website.
+Marketing site for **Zooicha**, an AI product-page builder for ecommerce and
+dropshipping. Paste any product URL (AliExpress, Amazon, TikTok Shop, Temu) and
+Zooicha generates a high-converting store page — AI copy, polished images,
+reviews and offers — in seconds, then publishes to Shopify in one click.
+
+Positioned as a faster, better-priced alternative to PagePilot, adding an AI
+image studio, built-in A/B testing and conversion analytics.
 
 Built with React + Vite and the [`motion`](https://motion.dev) animation
-library. Single-page landing site with a live hero demo, feature grid,
-pricing, testimonials and FAQ.
+library. Single-page landing site with a live "paste-a-link" hero demo, feature
+grid, a vs-PagePilot comparison table, pricing, testimonials and FAQ.
 
 ## Develop
 
