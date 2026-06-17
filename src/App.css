@@ -786,6 +786,45 @@
   .hero-mark3d { width: 138px; height: 138px; margin: -8px 0 -6px -10px; }
 }
 
+/* ---------- full-bleed lifestyle band ---------- */
+.lifestyle {
+  position: relative;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  min-height: 560px;
+  overflow: hidden;
+  border-block: 1px solid var(--border);
+}
+.lifestyle img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.lifestyle::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(40, 28, 16, 0.35), rgba(40, 28, 16, 0.55));
+}
+.lifestyle-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 620px;
+  padding: 90px 24px;
+}
+.lifestyle-inner .eyebrow { color: #f3d4ab; }
+.lifestyle-inner h2 { color: #fff; font-size: clamp(28px, 4.4vw, 48px); margin: 14px 0 16px; }
+.lifestyle-inner p { color: rgba(255, 255, 255, 0.92); font-size: 18px; max-width: 480px; margin: 0 auto 28px; }
+@media (max-width: 560px) {
+  .lifestyle { min-height: 460px; }
+  .lifestyle-inner { padding: 64px 22px; }
+  .lifestyle-inner p { font-size: 16px; }
+  .lifestyle-inner .btn { width: 100%; justify-content: center; }
+}
+
 /* ---------- newsletter / email capture ---------- */
 .newsletter {
   background:

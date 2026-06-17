@@ -20,6 +20,13 @@ const IMG = {
   detail: ae('S5c768bdf6b834df0b8187796701e4be10'),  // foam / construction detail
 }
 
+// Custom on-brand lifestyle imagery (AI-generated, stored in /public/img)
+const LOCAL = {
+  heroLifestyle: '/img/hero-lifestyle.webp',
+  storyAmbiance: '/img/story-ambiance.webp',
+  detailTexture: '/img/detail-texture.webp',
+}
+
 /* ---------- commerce config ---------- */
 const BASE_PRICE = 60
 // Original / compare-at value per set — drives the struck-through "was" price.
@@ -47,7 +54,7 @@ const BENEFITS = [
   { n: '03', title: 'A pocket of calm', img: IMG.gray, body: 'No app, no appointment, no subscription. Roll it out, lie back, and give yourself ten unhurried minutes whenever you need to reset.' },
 ]
 const FEATURES = [
-  { title: 'Thoughtfully shaped points', img: IMG.detail, body: 'Each disc is moulded to spread pressure evenly, so the sensation is firm and grounding rather than sharp. It softens within a minute or two of lying down.' },
+  { title: 'Thoughtfully shaped points', img: LOCAL.detailTexture, body: 'Each disc is moulded to spread pressure evenly, so the sensation is firm and grounding rather than sharp. It softens within a minute or two of lying down.' },
   { title: 'Made to last', img: IMG.gray, body: 'A dense foam core that keeps its shape and a removable cover you can refresh between uses. Built to be a fixture of your routine, not a one-week novelty.' },
   { title: 'Your pace, your pressure', img: IMG.gold, body: 'Start over a light layer, work up to skin contact, and choose how long you stay. The mat meets you wherever you are today.' },
 ]
@@ -300,11 +307,33 @@ function Benefits() {
   )
 }
 
+function Lifestyle() {
+  return (
+    <section className="lifestyle">
+      <img src={LOCAL.heroLifestyle} alt="A calm moment resting on the Acuroot mat" loading="lazy" />
+      <motion.div
+        className="lifestyle-inner"
+        initial={{ opacity: 0, y: 26 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.4 }}
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <span className="eyebrow">Ten quiet minutes</span>
+        <h2>Your daily reset, rolled out on the floor</h2>
+        <p>Lie back, breathe, and let the day soften. No screens, no steps — just you and a few unhurried minutes.</p>
+        <motion.a href="#buy" className="btn btn-lg" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+          Shop the set — {money(BASE_PRICE)}
+        </motion.a>
+      </motion.div>
+    </section>
+  )
+}
+
 function Story() {
   return (
     <Section id="story" className="story">
       <div className="wrap story-grid">
-        <motion.div className="story-img" variants={fadeUp}><img src={IMG.gold} alt="The Acuroot set" loading="lazy" /></motion.div>
+        <motion.div className="story-img" variants={fadeUp}><img src={LOCAL.storyAmbiance} alt="The Acuroot set rolled out at home" loading="lazy" /></motion.div>
         <motion.div className="story-copy" variants={fadeUp}>
           <span className="eyebrow">Our story</span>
           <h2>Made for the moment you finally slow down</h2>
@@ -563,6 +592,7 @@ export default function App() {
       <Hero store={store} />
       <Marquee />
       <Benefits />
+      <Lifestyle />
       <Story />
       <Reviews />
       <Features />
