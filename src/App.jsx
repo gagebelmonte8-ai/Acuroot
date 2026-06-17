@@ -499,6 +499,46 @@ function Faq() {
   )
 }
 
+function Newsletter() {
+  const [done, setDone] = useState(false)
+  const submit = (e) => {
+    e.preventDefault()
+    const value = (e.currentTarget.elements.email?.value || '').trim()
+    if (!value.includes('@')) return
+    setDone(true)
+  }
+  return (
+    <Section id="newsletter" className="newsletter">
+      <div className="wrap">
+        <motion.div className="newsletter-card" variants={fadeUp}>
+          <span className="eyebrow">Before you go</span>
+          <h2>Take <span className="grad-text">10% off</span> your first reset</h2>
+          <p className="muted">Join our list for the occasional calm note — restocks, gentle tips, and a one-time code for your first Acuroot set.</p>
+          {done ? (
+            <motion.div className="newsletter-done" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+              ✓ You’re in — your 10% code is on its way to your inbox.
+            </motion.div>
+          ) : (
+            <form className="newsletter-form" onSubmit={submit}>
+              <input
+                type="email"
+                name="email"
+                required
+                placeholder="you@email.com"
+                aria-label="Email address"
+              />
+              <motion.button type="submit" className="btn" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>
+                Get my 10% off
+              </motion.button>
+            </form>
+          )}
+          <small className="newsletter-fine">No spam, just calm. Unsubscribe anytime.</small>
+        </motion.div>
+      </div>
+    </Section>
+  )
+}
+
 function Footer() {
   return (
     <footer className="footer">
@@ -528,6 +568,7 @@ export default function App() {
       <Features />
       <Buy store={store} />
       <Faq />
+      <Newsletter />
       <Footer />
       <CheckoutModal store={store} />
     </>
