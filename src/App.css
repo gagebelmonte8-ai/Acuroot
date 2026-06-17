@@ -69,8 +69,7 @@
 .logo-mark {
   display: block;
   flex: 0 0 auto;
-  border-radius: 9px;
-  filter: drop-shadow(0 6px 14px rgba(140, 78, 44, 0.28));
+  filter: drop-shadow(0 3px 6px rgba(176, 106, 64, 0.22));
 }
 .logo-word {
   font-family: var(--display);
@@ -256,7 +255,9 @@
 
 @media (max-width: 860px) {
   .hero-grid { grid-template-columns: 1fr; }
-  .hero-art { order: -1; }
+  /* copy (incl. the 3D mark + CTA) first so "Shop the set" is visible right away */
+  .hero-copy { order: 1; }
+  .hero-art { order: 2; }
 }
 
 /* ---------- marquee ---------- */
@@ -760,3 +761,48 @@
   .buy-copy { order: -1; }
   #buy { scroll-margin-top: 76px; }
 }
+
+/* ---------- interactive 3D letter mark ---------- */
+.hero-mark3d {
+  width: 168px;
+  height: 168px;
+  margin: -14px 0 -8px -14px;
+}
+.hero-mark3d canvas {
+  touch-action: pan-y;
+  cursor: grab;
+}
+.hero-mark3d canvas:active { cursor: grabbing; }
+.hero-mark3d-fallback {
+  display: block;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 128px;
+  line-height: 1.2;
+  color: var(--accent);
+  padding-left: 14px;
+}
+@media (max-width: 560px) {
+  .hero-mark3d { width: 138px; height: 138px; margin: -8px 0 -6px -10px; }
+}
+
+/* ---------- hero discount line ---------- */
+.hero-deal {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 18px;
+  flex-wrap: wrap;
+}
+.deal-pill {
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 5px 11px;
+  border-radius: 999px;
+}
+.deal-was { color: var(--muted); text-decoration: line-through; font-size: 17px; }
+.deal-now { color: var(--text-h); font-weight: 800; font-size: 22px; }

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, lazy, Suspense } from 'react'
 import {
   motion,
   AnimatePresence,
@@ -9,6 +9,8 @@ import {
 } from 'motion/react'
 import './App.css'
 import { cartUrl, VARIANTS, CARE_VARIANT, shopifyConfigured } from './lib/shopify'
+
+const Letter3D = lazy(() => import('./Letter3D'))
 
 /* ---------- product imagery (AliExpress CDN) ---------- */
 const ae = (hash) => `https://ae01.alicdn.com/kf/${hash}.jpg`
@@ -22,6 +24,8 @@ const IMG = {
 
 /* ---------- commerce config ---------- */
 const BASE_PRICE = 60
+// Original / compare-at value per set — drives the struck-through "was" price.
+const COMPARE_AT = 120
 const PROTECTION_PRICE = 5
 
 const BUNDLES = [
@@ -91,7 +95,7 @@ function useStore() {
   const [loading, setLoading] = useState(false)
 
   const bundle = BUNDLES.find((b) => b.qty === qty)
-  const fullPrice = BASE_PRICE * qty
+  const fullPrice = COMPARE_AT * qty
   const saving = fullPrice - bundle.price
   const total = bundle.price + (protect ? PROTECTION_PRICE : 0)
 
@@ -111,37 +115,21 @@ function useStore() {
 }
 
 /* ---------- brand / logo ---------- */
-function LogoMark({ size = 32, idle = true }) {
-  const uid = 'acuroot-logo'
+function LogoMark({ size = 30 }) {
   return (
     <motion.svg
       className="logo-mark"
       width={size}
       height={size}
       viewBox="0 0 100 100"
-      whileHover={{ rotate: -6, scale: 1.06 }}
+      whileHover={{ rotate: -6, scale: 1.08 }}
       transition={{ type: 'spring', stiffness: 320, damping: 14 }}
       aria-hidden="true"
     >
-      <defs>
-        <linearGradient id={uid} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor="#c98c5d" />
-          <stop offset="0.5" stopColor="#b06a40" />
-          <stop offset="1" stopColor="#8c4e2c" />
-        </linearGradient>
-      </defs>
-      <rect x="4" y="4" width="92" height="92" rx="27" fill={`url(#${uid})`} />
-      <g fill="none" stroke="#fdf7f0" strokeWidth="8.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M33 75 50 30 67 75" />
-        <path d="M40 58h20" />
+      <g fill="none" stroke="#b06a40" strokeWidth="11" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M27 82 50 18 73 82" />
+        <path d="M37 60h26" />
       </g>
-      <motion.path
-        d="M50 31c5-7 13-8 18.5-5.2-2.2 7-10 10.2-16 7.4"
-        fill="#e7d4a0"
-        style={{ originX: '50px', originY: '31px' }}
-        animate={idle ? { rotate: [0, -7, 0] } : undefined}
-        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-      />
     </motion.svg>
   )
 }
@@ -239,12 +227,26 @@ function Hero({ store }) {
     tiltY.set(0)
   }
 
+  // scroll so the full selection (price → bundles → colours → add to cart) is in view
+  const goToBuy = (e) => {
+    const el = document.getElementById('buy-options')
+    if (!el) return
+    e.preventDefault()
+    const y = el.getBoundingClientRect().top + window.scrollY - 88
+    window.scrollTo({ top: y, behavior: 'smooth' })
+  }
+
   return (
     <section className="hero" id="top" ref={ref}>
       <div className="hero-aura" aria-hidden="true" />
       <div className="wrap hero-grid">
         <div className="hero-copy">
-          <motion.span className="eyebrow" variants={fadeUp} initial="hidden" animate="show">The all-in-1 calm kit</motion.span>
+          <div className="hero-mark3d" title="Drag to rotate · click to spin">
+            <Suspense fallback={<span className="hero-mark3d-fallback">A</span>}>
+              <Letter3D />
+            </Suspense>
+          </div>
+          <motion.span className="eyebrow" variants={fadeUp} initial="hidden" animate="show">The all-in-1 calm kit · 50% off</motion.span>
           <motion.h1 initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}>
             Rest your back into <span className="grad-text">stillness</span>
           </motion.h1>
@@ -253,9 +255,14 @@ function Hero({ store }) {
             soften tension and feel grounded again in ten unhurried minutes.
           </motion.p>
           <motion.div className="hero-cta" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.6 }}>
-            <motion.a href="#buy" className="btn btn-lg hero-shop" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>Shop the set — from {money(BASE_PRICE)}</motion.a>
+            <motion.a href="#buy" onClick={goToBuy} className="btn btn-lg hero-shop" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>Shop the set — {money(BASE_PRICE)}</motion.a>
             <motion.a href="#benefits" className="btn btn-ghost" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>How it feels →</motion.a>
           </motion.div>
+          <div className="hero-deal">
+            <span className="deal-pill">Launch offer · 50% off</span>
+            <span className="deal-was">{money(COMPARE_AT)}</span>
+            <b className="deal-now">{money(BASE_PRICE)}</b>
+          </div>
           <div className="hero-trust"><Stars /> <span>Rated 4.9 / 5 by our early customers</span></div>
         </div>
 
@@ -416,7 +423,7 @@ function Buy({ store }) {
         <motion.div className="buy-copy" variants={fadeUp}>
           <span className="eyebrow">All-in-1 bundle · mat + pillow + bag</span>
           <h2>The Acuroot Set</h2>
-          <div className="price-row">
+          <div className="price-row" id="buy-options">
             <span className="price">{money(bundle.price)}</span>
             {saving > 0 && <span className="was">{money(fullPrice)}</span>}
             {saving > 0 && <span className="save-pill">Save {money(saving)}</span>}
