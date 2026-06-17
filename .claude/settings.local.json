@@ -7,7 +7,12 @@
       "Bash(explorer.exe dist *)",
       "mcp__a61e472d-a2f3-408e-a908-2178094ac12d__get-shop-info",
       "Bash(curl -sI \"https://jjf1tr-dt.myshopify.com/cart/55049896919332:1\")",
-      "Bash(curl -sIL \"https://jjf1tr-dt.myshopify.com/cart/55049896919332:1\")"
+      "Bash(curl -sIL \"https://jjf1tr-dt.myshopify.com/cart/55049896919332:1\")",
+      "Bash(git remote *)",
+      "Bash(git push *)",
+      "Bash(npm run *)",
+      "Bash(git add *)",
+      "Bash(git commit -q -m 'Add Acuroot '\\\\''A'\\\\'' logo, refine UI, richer animations, mobile menu + polish *)"
     ]
   }
 }

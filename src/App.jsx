@@ -1,9 +1,10 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import {
   motion,
   AnimatePresence,
   useScroll,
   useSpring,
+  useTransform,
   useMotionValueEvent,
 } from 'motion/react'
 import './App.css'
@@ -109,27 +110,119 @@ function useStore() {
   return { qty, setQty, color, setColor, protect, setProtect, modalOpen, setModalOpen, loading, bundle, fullPrice, saving, total, checkout }
 }
 
+/* ---------- brand / logo ---------- */
+function LogoMark({ size = 32, idle = true }) {
+  const uid = 'acuroot-logo'
+  return (
+    <motion.svg
+      className="logo-mark"
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      whileHover={{ rotate: -6, scale: 1.06 }}
+      transition={{ type: 'spring', stiffness: 320, damping: 14 }}
+      aria-hidden="true"
+    >
+      <defs>
+        <linearGradient id={uid} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#c98c5d" />
+          <stop offset="0.5" stopColor="#b06a40" />
+          <stop offset="1" stopColor="#8c4e2c" />
+        </linearGradient>
+      </defs>
+      <rect x="4" y="4" width="92" height="92" rx="27" fill={`url(#${uid})`} />
+      <g fill="none" stroke="#fdf7f0" strokeWidth="8.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M33 75 50 30 67 75" />
+        <path d="M40 58h20" />
+      </g>
+      <motion.path
+        d="M50 31c5-7 13-8 18.5-5.2-2.2 7-10 10.2-16 7.4"
+        fill="#e7d4a0"
+        style={{ originX: '50px', originY: '31px' }}
+        animate={idle ? { rotate: [0, -7, 0] } : undefined}
+        transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+      />
+    </motion.svg>
+  )
+}
+
+function Logo({ size = 32 }) {
+  return (
+    <span className="brand">
+      <LogoMark size={size} />
+      <span className="logo-word">Acuroot<sup className="tm">™</sup></span>
+    </span>
+  )
+}
+
 /* ---------- sections ---------- */
+const NAV_LINKS = [
+  ['#benefits', 'Benefits'],
+  ['#story', 'Our story'],
+  ['#reviews', 'Loved by'],
+  ['#faq', 'FAQ'],
+]
+
 function Nav() {
+  const [open, setOpen] = useState(false)
   return (
     <motion.header className="nav" initial={{ y: -80, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6, ease: 'easeOut' }}>
       <div className="wrap nav-inner">
-        <a href="#top" className="logo">Acuroot<sup className="tm">™</sup></a>
+        <a href="#top" className="logo" aria-label="Acuroot home"><Logo /></a>
         <nav className="nav-links">
-          <a href="#benefits">Benefits</a>
-          <a href="#story">Our story</a>
-          <a href="#reviews">Loved by</a>
-          <a href="#faq">FAQ</a>
+          {NAV_LINKS.map(([href, label]) => (
+            <a key={href} href={href} className="nav-link">{label}</a>
+          ))}
         </nav>
-        <motion.a href="#buy" className="btn btn-sm" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>Shop now</motion.a>
+        <div className="nav-right">
+          <motion.a href="#buy" className="btn btn-sm shop-now" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>Shop now</motion.a>
+          <button
+            className={`nav-toggle ${open ? 'open' : ''}`}
+            onClick={() => setOpen((v) => !v)}
+            aria-label={open ? 'Close menu' : 'Open menu'}
+            aria-expanded={open}
+          >
+            <span /><span /><span />
+          </button>
+        </div>
       </div>
+      <AnimatePresence>
+        {open && (
+          <motion.nav
+            className="mobile-menu"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <div className="wrap mobile-menu-inner">
+              {NAV_LINKS.map(([href, label], i) => (
+                <motion.a
+                  key={href}
+                  href={href}
+                  onClick={() => setOpen(false)}
+                  initial={{ opacity: 0, x: -12 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.05 + i * 0.05 }}
+                >
+                  {label}
+                </motion.a>
+              ))}
+            </div>
+          </motion.nav>
+        )}
+      </AnimatePresence>
     </motion.header>
   )
 }
 
 function Hero({ store }) {
+  const ref = useRef(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
+  const artY = useTransform(scrollYProgress, [0, 1], [0, -60])
+  const artScale = useTransform(scrollYProgress, [0, 1], [1, 1.04])
   return (
-    <section className="hero" id="top">
+    <section className="hero" id="top" ref={ref}>
       <div className="wrap hero-grid">
         <div className="hero-copy">
           <motion.span className="eyebrow" variants={fadeUp} initial="hidden" animate="show">The all-in-1 calm kit</motion.span>
@@ -147,7 +240,7 @@ function Hero({ store }) {
           <div className="hero-trust"><Stars /> <span>Rated 4.9 / 5 by our early customers</span></div>
         </div>
 
-        <motion.div className="hero-art" initial={{ opacity: 0, scale: 0.9, rotate: -3 }} animate={{ opacity: 1, scale: 1, rotate: 0 }} transition={{ delay: 0.2, type: 'spring', stiffness: 120, damping: 16 }}>
+        <motion.div className="hero-art" style={{ y: artY, scale: artScale }} initial={{ opacity: 0, rotate: -3 }} animate={{ opacity: 1, rotate: 0 }} transition={{ delay: 0.2, type: 'spring', stiffness: 120, damping: 16 }}>
           <motion.div className="hero-art-inner" animate={{ y: [0, -16, 0] }} transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}>
             <AnimatePresence initial={false}>
               <motion.img
@@ -435,7 +528,7 @@ function Footer() {
   return (
     <footer className="footer">
       <div className="wrap footer-inner">
-        <a className="logo">Acuroot<sup className="tm">™</sup></a>
+        <a href="#top" className="logo"><Logo size={34} /></a>
         <p className="muted">A calmer ten minutes a day.</p>
         <div className="footer-links"><a href="#benefits">Benefits</a><a href="#story">Our story</a><a href="#reviews">Loved by</a><a href="#faq">FAQ</a></div>
         <small className="muted">© {new Date().getFullYear()} Acuroot. This product is a wellness aid and is not intended to diagnose or treat any condition.</small>
