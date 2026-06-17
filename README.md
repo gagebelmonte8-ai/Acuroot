@@ -10,7 +10,19 @@ image studio, built-in A/B testing and conversion analytics.
 
 Built with React + Vite and the [`motion`](https://motion.dev) animation
 library. Single-page landing site with a live "paste-a-link" hero demo, feature
-grid, a vs-PagePilot comparison table, pricing, testimonials and FAQ.
+grid, a vs-PagePilot comparison table, pricing, testimonials and FAQ — plus an
+interactive **Studio** at `#/studio`.
+
+## The Studio
+
+Visit `#/studio` (or paste a URL on the landing page and hit *Generate*) to try
+the interactive builder: paste a product URL, watch the generation steps run,
+then get an **editable, publishable product page** — title, headline and price
+are live-editable, with desktop/mobile preview.
+
+> Note: generation is simulated client-side (deterministic from the URL) — there
+> is no backend scraping or real Shopify publishing yet. It demonstrates the
+> intended product flow.
 
 ## Develop
 

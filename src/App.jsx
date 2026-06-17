@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useInView } from 'motion/react'
 import './App.css'
+import Studio from './Studio.jsx'
 
 /* ------------------------------------------------------------------ */
 /*  Small helpers                                                      */
@@ -312,12 +313,38 @@ const FAQS = [
 ]
 
 /* ------------------------------------------------------------------ */
-/*  App                                                                */
+/*  Router — toggle between the landing page and the studio            */
 /* ------------------------------------------------------------------ */
 
 export default function App() {
+  const [route, setRoute] = useState(() => window.location.hash)
+
+  useEffect(() => {
+    const onHash = () => {
+      setRoute(window.location.hash)
+      window.scrollTo(0, 0)
+    }
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+
+  return route.startsWith('#/studio') ? <Studio /> : <Landing />
+}
+
+/* ------------------------------------------------------------------ */
+/*  Landing page                                                       */
+/* ------------------------------------------------------------------ */
+
+function Landing() {
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const ctaInput = useRef(null)
+
+  const goToStudio = (e) => {
+    e.preventDefault()
+    const v = ctaInput.current?.value.trim()
+    window.location.hash = '#/studio' + (v ? `?u=${encodeURIComponent(v)}` : '')
+  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12)
@@ -341,7 +368,7 @@ export default function App() {
           </nav>
           <div className="nav-cta">
             <a href="#" className="btn btn-ghost">Sign in</a>
-            <a href="#start" className="btn btn-primary">Build a page free</a>
+            <a href="#/studio" className="btn btn-primary">Build a page free</a>
           </div>
           <button
             className="nav-burger"
@@ -377,7 +404,7 @@ export default function App() {
           </Reveal>
           <Reveal delay={0.18}>
             <div className="hero-actions">
-              <a href="#start" className="btn btn-primary btn-lg">Build my first page free →</a>
+              <a href="#/studio" className="btn btn-primary btn-lg">Build my first page free →</a>
               <a href="#how" className="btn btn-ghost btn-lg">See it in action</a>
             </div>
           </Reveal>
@@ -512,7 +539,7 @@ export default function App() {
                     ))}
                   </ul>
                   <a
-                    href="#start"
+                    href="#/studio"
                     className={`btn ${p.featured ? 'btn-primary' : 'btn-outline'} btn-block`}
                   >
                     {p.cta}
@@ -579,8 +606,9 @@ export default function App() {
               Join 40,000+ sellers building higher-converting pages with Zooicha. Free to start —
               live in about 30 seconds.
             </p>
-            <form className="cta-form" onSubmit={(e) => e.preventDefault()}>
+            <form className="cta-form" onSubmit={goToStudio}>
               <input
+                ref={ctaInput}
                 type="text"
                 className="cta-input"
                 placeholder="Paste a product URL (AliExpress, Amazon, TikTok Shop…)"
