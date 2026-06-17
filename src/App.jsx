@@ -1,5 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
-import { motion, useInView } from 'motion/react'
+import { motion, useInView, useScroll, useSpring } from 'motion/react'
+import {
+  Link2,
+  PenLine,
+  Wand2,
+  Zap,
+  FlaskConical,
+  TrendingUp,
+  Sparkles,
+  Check,
+  ArrowRight,
+  Menu,
+  Star,
+  AtSign,
+  MessageCircle,
+  Globe,
+} from 'lucide-react'
 import './App.css'
 import Studio from './Studio.jsx'
 
@@ -20,6 +36,42 @@ function Reveal({ children, delay = 0, y = 18, className = '' }) {
     >
       {children}
     </motion.div>
+  )
+}
+
+/* A reading-progress bar pinned to the very top of the page. */
+function ScrollProgress() {
+  const { scrollYProgress } = useScroll()
+  const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 30, restDelta: 0.001 })
+  return <motion.div className="scroll-bar" style={{ scaleX }} aria-hidden="true" />
+}
+
+/* Count a number up from 0 once it scrolls into view. */
+function Stat({ value, suffix = '', label, decimals = 0 }) {
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true, margin: '-80px' })
+  const [n, setN] = useState(0)
+
+  useEffect(() => {
+    if (!inView) return
+    let raf
+    const start = performance.now()
+    const dur = 1400
+    const tick = (t) => {
+      const p = Math.min(1, (t - start) / dur)
+      setN(value * (1 - Math.pow(1 - p, 3))) // easeOutCubic
+      if (p < 1) raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [inView, value])
+
+  const shown = decimals ? n.toFixed(decimals) : Math.round(n).toLocaleString()
+  return (
+    <div ref={ref} className="stat">
+      <span className="stat-num">{shown}{suffix}</span>
+      <span className="stat-label">{label}</span>
+    </div>
   )
 }
 
@@ -173,35 +225,42 @@ function HeroDemo() {
 
 const FEATURES = [
   {
-    icon: '🔗',
+    Icon: Link2,
     title: 'Paste any product URL',
     body: 'Drop a link from AliExpress, Amazon, TikTok Shop or Temu. Zooicha pulls specs, images and reviews and rebuilds them into a page engineered to convert.',
   },
   {
-    icon: '✍️',
+    Icon: PenLine,
     title: 'Copy that actually sells',
     body: 'Conversion-trained AI writes benefit-led headlines, bullets, FAQs and urgency — in 30+ languages, tuned to your product and niche.',
   },
   {
-    icon: '🎨',
+    Icon: Wand2,
     title: 'Built-in AI image studio',
     body: 'Auto-remove busy backgrounds, generate lifestyle shots, and assemble scroll-stopping galleries. No designer and no Photoshop required.',
   },
   {
-    icon: '⚡',
+    Icon: Zap,
     title: '1-click Shopify import',
     body: 'Push a finished page straight into your store as a product or landing page — your theme, fonts and tracking pixels stay intact.',
   },
   {
-    icon: '🧪',
+    Icon: FlaskConical,
     title: 'A/B testing on autopilot',
     body: 'Spin up page variants and let Zooicha route traffic to the winner automatically. Stop guessing which version converts.',
   },
   {
-    icon: '📈',
+    Icon: TrendingUp,
     title: 'Live winning-product feed',
     body: 'A daily feed of trending, high-margin products with saturation and ad data — so you build pages for proven winners, not duds.',
   },
+]
+
+const STATS = [
+  { value: 40000, suffix: '+', label: 'Pages built' },
+  { value: 30, suffix: 's', label: 'Avg. build time' },
+  { value: 32, suffix: '%', label: 'Avg. lift in conversion' },
+  { value: 4.9, suffix: '/5', label: 'Average user rating', decimals: 1 },
 ]
 
 const STEPS = [
@@ -355,6 +414,8 @@ function Landing() {
 
   return (
     <div id="top">
+      <ScrollProgress />
+
       {/* ---------------- Nav ---------------- */}
       <header className={`nav ${scrolled ? 'is-scrolled' : ''}`}>
         <div className="wrap nav-inner">
@@ -376,17 +437,29 @@ function Landing() {
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((o) => !o)}
           >
-            <span /><span /><span />
+            <Menu size={20} />
           </button>
         </div>
       </header>
 
       {/* ---------------- Hero ---------------- */}
       <section className="hero">
+        <motion.span
+          className="blob blob-1"
+          aria-hidden="true"
+          animate={{ x: [0, 30, 0], y: [0, -24, 0], scale: [1, 1.08, 1] }}
+          transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut' }}
+        />
+        <motion.span
+          className="blob blob-2"
+          aria-hidden="true"
+          animate={{ x: [0, -28, 0], y: [0, 20, 0], scale: [1, 1.12, 1] }}
+          transition={{ duration: 17, repeat: Infinity, ease: 'easeInOut' }}
+        />
         <div className="wrap hero-inner">
           <Reveal>
-            <a href="#start" className="badge">
-              <span className="badge-dot" /> Built for Shopify &amp; dropshipping — try it free
+            <a href="#/studio" className="badge">
+              <Sparkles size={14} /> Built for Shopify &amp; dropshipping — try it free
             </a>
           </Reveal>
           <Reveal delay={0.05}>
@@ -404,7 +477,9 @@ function Landing() {
           </Reveal>
           <Reveal delay={0.18}>
             <div className="hero-actions">
-              <a href="#/studio" className="btn btn-primary btn-lg">Build my first page free →</a>
+              <a href="#/studio" className="btn btn-primary btn-lg">
+                Build my first page free <ArrowRight size={18} />
+              </a>
               <a href="#how" className="btn btn-ghost btn-lg">See it in action</a>
             </div>
           </Reveal>
@@ -420,15 +495,28 @@ function Landing() {
         </div>
       </section>
 
-      {/* ---------------- Trust strip ---------------- */}
+      {/* ---------------- Trust strip (marquee) ---------------- */}
       <section className="trust">
         <div className="wrap">
           <p className="trust-label">Powering 40,000+ pages for stores selling on</p>
-          <div className="trust-row">
-            {['Shopify', 'AliExpress', 'Amazon', 'TikTok Shop', 'Temu', 'WooCommerce'].map((n) => (
-              <span key={n} className="trust-logo">{n}</span>
-            ))}
+        </div>
+        <div className="marquee" aria-hidden="true">
+          <div className="marquee-track">
+            {['Shopify', 'AliExpress', 'Amazon', 'TikTok Shop', 'Temu', 'WooCommerce', 'Etsy', 'eBay']
+              .concat(['Shopify', 'AliExpress', 'Amazon', 'TikTok Shop', 'Temu', 'WooCommerce', 'Etsy', 'eBay'])
+              .map((n, i) => (
+                <span key={n + i} className="trust-logo">{n}</span>
+              ))}
           </div>
+        </div>
+      </section>
+
+      {/* ---------------- Stats ---------------- */}
+      <section className="stats">
+        <div className="wrap stats-grid">
+          {STATS.map((s) => (
+            <Stat key={s.label} {...s} />
+          ))}
         </div>
       </section>
 
@@ -447,7 +535,9 @@ function Landing() {
             {FEATURES.map((f, i) => (
               <Reveal key={f.title} delay={i * 0.05}>
                 <div className="feat-card">
-                  <span className="feat-icon" aria-hidden="true">{f.icon}</span>
+                  <span className="feat-icon" aria-hidden="true">
+                    <f.Icon size={21} strokeWidth={2} />
+                  </span>
                   <h3>{f.title}</h3>
                   <p>{f.body}</p>
                 </div>
@@ -535,7 +625,10 @@ function Landing() {
                   </div>
                   <ul className="plan-feats">
                     {p.features.map((feat) => (
-                      <li key={feat}><span className="check">✓</span>{feat}</li>
+                      <li key={feat}>
+                        <span className="check"><Check size={15} strokeWidth={3} /></span>
+                        {feat}
+                      </li>
                     ))}
                   </ul>
                   <a
@@ -562,6 +655,11 @@ function Landing() {
             {QUOTES.map((q, i) => (
               <Reveal key={q.name} delay={i * 0.07}>
                 <figure className="quote">
+                  <div className="quote-stars" aria-label="5 out of 5 stars">
+                    {[0, 1, 2, 3, 4].map((s) => (
+                      <Star key={s} size={15} fill="currentColor" strokeWidth={0} />
+                    ))}
+                  </div>
                   <blockquote>“{q.quote}”</blockquote>
                   <figcaption>
                     <span className="avatar" aria-hidden="true">{q.name[0]}</span>
@@ -626,6 +724,11 @@ function Landing() {
           <div className="footer-brand">
             <Logo />
             <p>The AI product-page builder for Shopify. Paste a link — get a page that sells.</p>
+            <div className="footer-social">
+              <a href="#" aria-label="X / Twitter"><AtSign size={18} /></a>
+              <a href="#" aria-label="Community"><MessageCircle size={18} /></a>
+              <a href="#" aria-label="Website"><Globe size={18} /></a>
+            </div>
           </div>
           <div className="footer-cols">
             <div>

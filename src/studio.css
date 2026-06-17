@@ -40,13 +40,16 @@
   padding: 3px;
 }
 .st-device button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   border: 0;
   background: transparent;
   color: var(--muted);
   font-family: var(--sans);
   font-size: 13px;
   font-weight: 600;
-  padding: 7px 14px;
+  padding: 7px 13px;
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.15s ease, color 0.15s ease;
@@ -88,6 +91,7 @@
   padding: 15px 0;
 }
 .st-input-wrap input::placeholder { color: var(--muted); }
+.st-input-icon { color: var(--violet); flex-shrink: 0; }
 .st-input-row .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* stage */
@@ -167,8 +171,16 @@
 }
 .st-steps li.active { color: var(--text-h); }
 .st-steps li.done { color: var(--text); }
-.st-step-mark { color: var(--cyan); width: 18px; }
+.st-step-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  color: var(--cyan);
+}
+.st-steps li:not(.done):not(.active) .st-step-mark { color: var(--muted); opacity: 0.5; }
 .st-steps li.active .st-step-mark { color: var(--violet); }
+.st-spin { animation: spin 0.8s linear infinite; }
 
 /* ----- editor layout ----- */
 .st-editor {
@@ -224,7 +236,9 @@
   padding: 12px 14px;
 }
 .st-published strong { color: #38e08a; }
-.st-published span { display: block; color: var(--muted); margin-top: 3px; }
+.st-pub-head { display: flex; align-items: center; gap: 6px; color: var(--text-h); }
+.st-pub-head svg { color: #38e08a; flex-shrink: 0; }
+.st-published > span:last-child { display: block; color: var(--muted); margin-top: 3px; }
 
 /* ----- generated product page preview ----- */
 .st-preview {
@@ -260,7 +274,7 @@
 
 .pp-buy h1 { font-size: 26px; }
 .pp-rating { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 13px; color: var(--muted); }
-.pp-rating .stars { color: #ffc24b; letter-spacing: 1px; }
+.stars { display: inline-flex; align-items: center; gap: 1px; color: #ffc24b; }
 .pp-price { display: flex; align-items: baseline; gap: 10px; margin: 14px 0; }
 .pp-price strong { font-family: var(--display); font-size: 34px; color: var(--text-h); }
 .pp-price s { color: var(--muted); font-size: 17px; }
@@ -288,7 +302,8 @@
   box-shadow: 0 10px 28px rgba(99, 102, 241, 0.32);
 }
 .pp-trust { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 14px; font-size: 12px; color: var(--muted); }
-.pp-stock { margin-top: 12px; font-size: 13px; color: #ffae5c; font-weight: 600; }
+.pp-trust span { display: inline-flex; align-items: center; gap: 5px; }
+.pp-stock { display: flex; align-items: center; gap: 6px; margin-top: 12px; font-size: 13px; color: #ffae5c; font-weight: 600; }
 
 .pp-hero {
   text-align: center;
@@ -313,7 +328,6 @@
   border-radius: 13px;
   padding: 18px;
 }
-.pp-review .stars { color: #ffc24b; letter-spacing: 1px; font-size: 14px; }
 .pp-review p { margin: 10px 0; font-size: 14px; color: var(--text-h); }
 .pp-review strong { font-size: 12px; color: var(--muted); font-weight: 600; }
 

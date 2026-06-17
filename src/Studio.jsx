@@ -1,5 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
+import {
+  Link2,
+  Sparkles,
+  ArrowLeft,
+  ArrowRight,
+  Monitor,
+  Smartphone,
+  Check,
+  Circle,
+  Loader2,
+  Lock,
+  Truck,
+  RotateCcw,
+  Star,
+  Flame,
+} from 'lucide-react'
 import './studio.css'
 
 /* ------------------------------------------------------------------ */
@@ -177,21 +193,21 @@ export default function Studio() {
           {status === 'done' && (
             <div className="st-device" role="group" aria-label="Preview device">
               <button className={device === 'desktop' ? 'on' : ''} onClick={() => setDevice('desktop')}>
-                Desktop
+                <Monitor size={15} /> Desktop
               </button>
               <button className={device === 'mobile' ? 'on' : ''} onClick={() => setDevice('mobile')}>
-                Mobile
+                <Smartphone size={15} /> Mobile
               </button>
             </div>
           )}
-          <a href="#top" className="btn btn-ghost btn-sm">← Back to site</a>
+          <a href="#top" className="btn btn-ghost btn-sm"><ArrowLeft size={15} /> Back to site</a>
         </div>
       </header>
 
       {/* URL bar */}
       <div className="st-input-row">
         <div className="st-input-wrap">
-          <span aria-hidden="true">🔗</span>
+          <Link2 size={17} className="st-input-icon" aria-hidden="true" />
           <input
             type="text"
             value={url}
@@ -206,7 +222,11 @@ export default function Studio() {
           onClick={() => runGenerate()}
           disabled={status === 'generating' || !url.trim()}
         >
-          {status === 'generating' ? 'Generating…' : product ? 'Regenerate ✦' : 'Generate ✦'}
+          {status === 'generating' ? (
+            'Generating…'
+          ) : (
+            <>{product ? 'Regenerate' : 'Generate'} <Sparkles size={16} /></>
+          )}
         </button>
       </div>
 
@@ -221,7 +241,7 @@ export default function Studio() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <div className="st-empty-icon">✦</div>
+              <div className="st-empty-icon"><Sparkles size={28} /></div>
               <h2>Paste a product link to begin</h2>
               <p>
                 Zooicha will scrape the product, write conversion copy, polish the images and
@@ -254,7 +274,15 @@ export default function Studio() {
               <ul className="st-steps">
                 {STEPS.map((s, i) => (
                   <li key={s} className={i < step ? 'done' : i === step ? 'active' : ''}>
-                    <span className="st-step-mark">{i < step ? '✓' : i === step ? '◐' : '○'}</span>
+                    <span className="st-step-mark">
+                      {i < step ? (
+                        <Check size={16} strokeWidth={3} />
+                      ) : i === step ? (
+                        <Loader2 size={16} className="st-spin" />
+                      ) : (
+                        <Circle size={14} />
+                      )}
+                    </span>
                     {s}
                   </li>
                 ))}
@@ -309,7 +337,7 @@ export default function Studio() {
                   reorder sections by clicking them or just asking.
                 </p>
                 <button className="btn btn-primary btn-block" onClick={() => setPublished(true)}>
-                  Publish page →
+                  Publish page <ArrowRight size={16} />
                 </button>
                 {published && (
                   <motion.div
@@ -317,7 +345,7 @@ export default function Studio() {
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
                   >
-                    ✓ Published to <strong>zooicha.site/{product.slug}</strong>
+                    <span className="st-pub-head"><Check size={15} strokeWidth={3} /> Published to <strong>zooicha.site/{product.slug}</strong></span>
                     <span>and pushed to your Shopify store.</span>
                   </motion.div>
                 )}
@@ -344,7 +372,11 @@ export default function Studio() {
                     <div className="pp-buy">
                       <h1>{product.title}</h1>
                       <div className="pp-rating">
-                        <span className="stars">{'★'.repeat(5)}</span>
+                        <span className="stars">
+                          {[0, 1, 2, 3, 4].map((s) => (
+                            <Star key={s} size={15} fill="currentColor" strokeWidth={0} />
+                          ))}
+                        </span>
                         <span>{product.rating} · {product.reviewCount.toLocaleString()} reviews</span>
                       </div>
                       <div className="pp-price">
@@ -363,11 +395,13 @@ export default function Studio() {
                       </ul>
                       <button className="pp-cart">Add to cart</button>
                       <div className="pp-trust">
-                        <span>🔒 Secure checkout</span>
-                        <span>🚚 Free shipping</span>
-                        <span>↩ 30-day returns</span>
+                        <span><Lock size={14} /> Secure checkout</span>
+                        <span><Truck size={14} /> Free shipping</span>
+                        <span><RotateCcw size={14} /> 30-day returns</span>
                       </div>
-                      <p className="pp-stock">🔥 {product.sold.toLocaleString()} sold — selling fast</p>
+                      <p className="pp-stock">
+                        <Flame size={15} /> {product.sold.toLocaleString()} sold — selling fast
+                      </p>
                     </div>
                   </div>
 
@@ -381,7 +415,16 @@ export default function Studio() {
                     <div className="pp-review-grid">
                       {product.reviews.map((r) => (
                         <div key={r.name} className="pp-review">
-                          <span className="stars">{'★'.repeat(r.stars)}{'☆'.repeat(5 - r.stars)}</span>
+                          <span className="stars">
+                            {[0, 1, 2, 3, 4].map((s) => (
+                              <Star
+                                key={s}
+                                size={14}
+                                fill={s < r.stars ? 'currentColor' : 'none'}
+                                strokeWidth={s < r.stars ? 0 : 1.5}
+                              />
+                            ))}
+                          </span>
                           <p>“{r.text}”</p>
                           <strong>{r.name} · Verified buyer</strong>
                         </div>
