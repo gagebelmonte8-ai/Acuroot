@@ -10,14 +10,13 @@ import {
 import './App.css'
 import { cartUrl, VARIANTS, CARE_VARIANT, shopifyConfigured } from './lib/shopify'
 
-/* ---------- product imagery (AliExpress CDN) ---------- */
-const ae = (hash) => `https://ae01.alicdn.com/kf/${hash}.jpg`
+/* ---------- product imagery (AI-generated, in /public/img) ---------- */
 const IMG = {
-  gold: ae('Scad630702f354901808d834c71ea01a76'),   // gold set + lifestyle
-  yellow: ae('Sa96c32b9b70b4de9bcbee9b6b802a8c5y'),  // yellow set
-  purple: ae('S14b2b4287e9840488d031f1cd816e533J'),  // purple set
-  gray: ae('S5ae9170a5c604eb2b5eebf6cc9d43872O'),    // gray detail
-  detail: ae('S5c768bdf6b834df0b8187796701e4be10'),  // foam / construction detail
+  gold: '/img/set-gold.webp',
+  yellow: '/img/set-yellow.webp',
+  purple: '/img/set-purple.webp',
+  gray: '/img/set-gray.webp',
+  detail: '/img/detail-texture.webp',
 }
 
 // Custom on-brand lifestyle imagery (AI-generated, stored in /public/img)
