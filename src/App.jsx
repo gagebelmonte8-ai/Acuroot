@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { motion, useInView, useScroll, useSpring } from 'motion/react'
+import { motion, AnimatePresence, useInView, useScroll, useSpring } from 'motion/react'
 import {
   Link2,
   PenLine,
@@ -18,6 +18,7 @@ import {
 } from 'lucide-react'
 import './App.css'
 import Studio from './Studio.jsx'
+import Splash from './Splash.jsx'
 
 /* ------------------------------------------------------------------ */
 /*  Small helpers                                                      */
@@ -377,6 +378,8 @@ const FAQS = [
 
 export default function App() {
   const [route, setRoute] = useState(() => window.location.hash)
+  // deep links into the studio skip the splash; otherwise show it on arrival
+  const [entered, setEntered] = useState(() => window.location.hash.startsWith('#/studio'))
 
   useEffect(() => {
     const onHash = () => {
@@ -387,7 +390,16 @@ export default function App() {
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
 
-  return route.startsWith('#/studio') ? <Studio /> : <Landing />
+  const isStudio = route.startsWith('#/studio')
+
+  return (
+    <>
+      {isStudio ? <Studio /> : <Landing />}
+      <AnimatePresence>
+        {!entered && !isStudio && <Splash key="splash" onEnter={() => setEntered(true)} />}
+      </AnimatePresence>
+    </>
+  )
 }
 
 /* ------------------------------------------------------------------ */
