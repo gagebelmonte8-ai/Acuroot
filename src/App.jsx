@@ -5,7 +5,7 @@ import {
   useScroll,
   useSpring,
   useTransform,
-  useMotionValueEvent,
+  useMotionValue,
 } from 'motion/react'
 import './App.css'
 import { cartUrl, VARIANTS, CARE_VARIANT, shopifyConfigured } from './lib/shopify'
@@ -221,8 +221,27 @@ function Hero({ store }) {
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
   const artY = useTransform(scrollYProgress, [0, 1], [0, -60])
   const artScale = useTransform(scrollYProgress, [0, 1], [1, 1.04])
+
+  // pointer-driven 3D tilt on the product card
+  const tiltX = useMotionValue(0)
+  const tiltY = useMotionValue(0)
+  const rotX = useSpring(tiltX, { stiffness: 160, damping: 18 })
+  const rotY = useSpring(tiltY, { stiffness: 160, damping: 18 })
+  const onArtMove = (e) => {
+    const r = e.currentTarget.getBoundingClientRect()
+    const px = (e.clientX - r.left) / r.width - 0.5
+    const py = (e.clientY - r.top) / r.height - 0.5
+    tiltY.set(px * 16)
+    tiltX.set(-py * 16)
+  }
+  const onArtLeave = () => {
+    tiltX.set(0)
+    tiltY.set(0)
+  }
+
   return (
     <section className="hero" id="top" ref={ref}>
+      <div className="hero-aura" aria-hidden="true" />
       <div className="wrap hero-grid">
         <div className="hero-copy">
           <motion.span className="eyebrow" variants={fadeUp} initial="hidden" animate="show">The all-in-1 calm kit</motion.span>
@@ -234,14 +253,27 @@ function Hero({ store }) {
             soften tension and feel grounded again in ten unhurried minutes.
           </motion.p>
           <motion.div className="hero-cta" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4, duration: 0.6 }}>
-            <motion.a href="#buy" className="btn" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>Shop the set — from {money(BASE_PRICE)}</motion.a>
+            <motion.a href="#buy" className="btn btn-lg hero-shop" whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}>Shop the set — from {money(BASE_PRICE)}</motion.a>
             <motion.a href="#benefits" className="btn btn-ghost" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>How it feels →</motion.a>
           </motion.div>
           <div className="hero-trust"><Stars /> <span>Rated 4.9 / 5 by our early customers</span></div>
         </div>
 
-        <motion.div className="hero-art" style={{ y: artY, scale: artScale }} initial={{ opacity: 0, rotate: -3 }} animate={{ opacity: 1, rotate: 0 }} transition={{ delay: 0.2, type: 'spring', stiffness: 120, damping: 16 }}>
-          <motion.div className="hero-art-inner" animate={{ y: [0, -16, 0] }} transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}>
+        <motion.div
+          className="hero-art"
+          style={{ y: artY, scale: artScale }}
+          initial={{ opacity: 0, rotate: -3 }}
+          animate={{ opacity: 1, rotate: 0 }}
+          transition={{ delay: 0.2, type: 'spring', stiffness: 120, damping: 16 }}
+          onMouseMove={onArtMove}
+          onMouseLeave={onArtLeave}
+        >
+          <motion.div
+            className="hero-art-inner"
+            style={{ rotateX: rotX, rotateY: rotY, transformPerspective: 1000 }}
+            animate={{ y: [0, -16, 0] }}
+            transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+          >
             <AnimatePresence initial={false}>
               <motion.img
                 key={store.color.img}
@@ -426,39 +458,6 @@ function Buy({ store }) {
   )
 }
 
-/* ---------- sticky add-to-cart bar ---------- */
-function StickyBar({ store }) {
-  const { scrollY } = useScroll()
-  const [show, setShow] = useState(false)
-  useMotionValueEvent(scrollY, 'change', (v) => setShow(v > 700))
-
-  return (
-    <AnimatePresence>
-      {show && !store.modalOpen && (
-        <motion.div
-          className="sticky-bar"
-          initial={{ y: 90, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: 90, opacity: 0 }}
-          transition={{ type: 'spring', stiffness: 320, damping: 30 }}
-        >
-          <div className="wrap sticky-inner">
-            <img className="sticky-thumb" src={store.color.img} alt="" />
-            <div className="sticky-info">
-              <strong>Acuroot Set · {store.bundle.label}</strong>
-              <span className="muted">{store.color.name}{store.saving > 0 ? ` · save ${money(store.saving)}` : ''}</span>
-            </div>
-            <span className="sticky-price">{money(store.bundle.price)}</span>
-            <motion.button className="btn" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => store.setModalOpen(true)}>
-              Add to cart
-            </motion.button>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  )
-}
-
 /* ---------- checkout modal ---------- */
 function CheckoutModal({ store }) {
   const { modalOpen, setModalOpen, bundle, color, saving, protect, setProtect, total, loading, checkout } = store
@@ -554,7 +553,6 @@ export default function App() {
       <Buy store={store} />
       <Faq />
       <Footer />
-      <StickyBar store={store} />
       <CheckoutModal store={store} />
     </>
   )
